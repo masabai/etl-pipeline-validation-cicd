@@ -1,0 +1,13 @@
+pip install "snowflake-connector-python[pandas]"
+
+C:\Users\sawyn\AppData\Local\Programs\Python\Python311\python.exe -m pip install --upgrade pip
+
+C:\Users\sawyn\AppData\Local\Programs\Python\Python311\python.exe -m pip install --upgrade pandas
+
+C:\Users\sawyn\AppData\Local\Programs\Python\Python311\python.exe -c "import pandas as pd; print(pd.__version__)"
+
+C:\Users\sawyn\AppData\Local\Programs\Python\Python311\python.exe -m pip install --upgrade "snowflake-connector-python[pandas]"
+
+
+
+
