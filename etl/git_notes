@@ -7,6 +7,8 @@ git push --set-upstream origin dev
 # Start working in Dev, commit changes
 git add .
 git commit -m "Add transform test"
+
+# After the first push …and it will automatically push to origin/dev
 git push
 
 # merge dev -> main
