@@ -8,106 +8,56 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-# Load TXT files into DataFrames
-def load_txt_files(raw_dir):
-    """
-    Load all .txt FAERS files from a directory into a dictionary of DataFrames.
-    """
+def load_txt_files(raw_dir: Path):
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
-        df = pd.read_csv(txt_file, sep="$", dtype=str, low_memory=False)
-        dfs[txt_file.stem] = df
+        dfs[txt_file.stem] = pd.read_csv(txt_file, sep="$", dtype=str, low_memory=False)
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
 
 
-# Merge quarters and save CSVs
-def merge_and_save_all_tables(dfs_dict, output_dir):
+def transform_demo(df):
+    # simple demo transformation
+    df = df.copy()
+    df['load_ts'] = datetime.now()
+    df = df.drop_duplicates()
+    return df
+
+
+def transform_generic(df, table_name: str):
+    df = df.copy()
+    df['load_ts'] = datetime.now()
+    return df
+
+
+def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
     """
-    Merge all quarters for each FAERS table in dfs_dict and save a single CSV per table.
+    Merge quarters and transform one table at a time (memory safe)
     """
-    merged_dfs = {}
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    table_prefixes = set(key[:key.find("25")] for key in dfs_dict.keys())
+    # Clear old merged CSVs
+    for f in output_dir.glob("merged_*.csv"):
+        f.unlink()
+        logging.info(f"Deleted old file: {f.name}")
+
+    # Determine table prefixes (before quarter, e.g., DEMO25Q1 -> DEMO)
+    table_prefixes = set(k[:-5] for k in dfs_dict.keys())  # remove last 5 chars: 25Q1/25Q2
 
     for prefix in table_prefixes:
+        # Merge all quarters for this table
         table_dfs = [dfs_dict[k] for k in dfs_dict if k.startswith(prefix)]
         merged_df = pd.concat(table_dfs, ignore_index=True)
-        merged_dfs[prefix] = merged_df
 
+        # Transform
+        if prefix.upper() == 'DEMO':
+            merged_df = transform_demo(merged_df)
+        else:
+            merged_df = transform_generic(merged_df, prefix)
+
+        # Save CSV
         out_file = output_dir / f"merged_{prefix.lower()}.csv"
         merged_df.to_csv(out_file, index=False)
-        logging.info(f"Merged {prefix}: {len(table_dfs)} files → {out_file}")
+        logging.info(f"Saved transformed table: {out_file} ({len(merged_df)} rows)")
 
-    return merged_dfs
-
-
-# Base transform for all tables
-def base_transform(df, source_table, load_ts=None):
-    """
-    Minimal, testing-friendly transformations:
-    - primaryid and caseid as string
-    - drop rows missing primary keys
-    - add audit columns
-    - optional category conversion for object columns
-    """
-    if load_ts is None:
-        load_ts = datetime.utcnow()
-
-    df['primaryid'] = df['primaryid'].astype(str)
-    df['caseid'] = df['caseid'].astype(str)
-    df = df.dropna(subset=['primaryid', 'caseid'])
-
-    df['etl_loaded_at'] = load_ts
-    df['source_table'] = source_table
-
-    for col in df.select_dtypes(include='object').columns:
-        if df[col].nunique() < 1000:
-            df[col] = df[col].astype('category')
-
-    return df
-
-
-# Demo table: parse dates, numeric columns, deduplicate
-def transform_demo(df):
-    df = base_transform(df, 'demo')
-
-    date_cols = ['event_dt', 'mfr_dt', 'init_fda_dt', 'fda_dt', 'rept_dt']
-    for col in date_cols:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors='coerce', format='%Y%m%d')
-
-    num_cols = ['age', 'wt', 'caseversion', 'primaryid']
-    for col in num_cols:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-
-    if 'caseid' in df.columns and 'caseversion' in df.columns:
-        df = df.sort_values(['caseid', 'caseversion'], ascending=[True, False])
-        df = df.drop_duplicates(subset=['caseid'], keep='first')
-
-    return df
-
-
-# Other tables: base transform only
-def transform_generic(df, table_name):
-    return base_transform(df, table_name)
-
-
-# Apply transforms to all merged tables
-def transform_all(merged_dfs):
-    transformed_dfs = {}
-    for table_name, df in merged_dfs.items():
-        if table_name.lower() == 'demo':
-            transformed_dfs[table_name] = transform_demo(df)
-        else:
-            transformed_dfs[table_name] = transform_generic(df, table_name)
-        logging.info(f"Transformed table: {table_name} ({len(transformed_dfs[table_name])} rows)")
-
-    return transformed_dfs
-
-
-
-
-
+    logging.info("All tables merged & transformed successfully.")
