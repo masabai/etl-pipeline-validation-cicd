@@ -22,8 +22,6 @@ def load_txt_files(raw_dir: Path):
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
         dfs[txt_file.stem] = pd.read_csv(txt_file, sep="$", dtype=str)
-#        demo = pd.read_csv('merged_demo.csv', dtype={'to_mfr': str}, low_memory=False)
-
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
 
@@ -64,5 +62,7 @@ def merge_and_save_all_tables(dfs_dict: dict, output_dir: Path):
         logging.info(f"Merged {prefix}: {len(table_dfs)} files → {output_file}")
 
     return merged_dfs
+
+
 
 

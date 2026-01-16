@@ -1,3 +1,4 @@
+# Note: Demo script 
 import logging
 from pathlib import Path
 import pandas as pd
@@ -9,21 +10,17 @@ from great_expectations.expectations import (
     ExpectColumnToExist,
 )
 
-# Repo root (works locally, Codespaces, CI, prod)
-BASE_DIR = Path(__file__).resolve().parents[2]
-
-RAW_DIR = BASE_DIR / "data" / "raw"
-PROCESSED_DIR = BASE_DIR / "data" / "processed"
-GX_OUTPUT_DIR = BASE_DIR / "data" / "gx_result"
-
-RAW_DIR.mkdir(parents=True, exist_ok=True)
-PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+# Paths
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+GX_OUTPUT_DIR = PROJECT_ROOT / "data" / "validation"
 GX_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+print("Testing PR")
 
 """
 Module: extract_gx
 
-This module performs data gx on raw TXT files using Great Expectations.
+This module validates raw TXT files using Great Expectations.
 Each TXT file is loaded as a pandas DataFrame and validated for:
     - Row count within a specified range
     - Exact column count
@@ -34,14 +31,14 @@ overwriting previous results for each table.
 """
 def run_data_validation(df, batch_name="my_batch"):
     """
-    Run Great Expectations gx on a single DataFrame.
+    Run Great Expectations validation on a single DataFrame.
 
     Parameters:
         df (pd.DataFrame): The DataFrame to validate.
-        batch_name (str): Logical name for the batch / dataset.
+        batch_name (str): Logical name for the batch/dataset.
 
     Returns:
-        results: The gx results object from Great Expectations.
+        results: The validation results object from Great Expectations.
     """
     context = gx.get_context()
     data_source = context.data_sources.add_pandas(name="my_pandas_datasource")
@@ -75,7 +72,7 @@ def run_data_validation(df, batch_name="my_batch"):
 def validate_all_texts():
     """
     Loop through all TXT files in RAW_DIR, validate each using Great Expectations,
-    and save the gx results as JSON in GX_OUTPUT_DIR.
+    and save the validation results as JSON in GX_OUTPUT_DIR.
 
     Overwrites existing JSON files for each table.
     """
@@ -87,12 +84,8 @@ def validate_all_texts():
         validation_results = run_data_validation(df, batch_name=table_name)
         output_file = GX_OUTPUT_DIR / f"gx_{table_name}.json"
 
-        # Overwrite previous gx results
+        # Overwrite previous validation results
         with open(output_file, "w") as f:
             json.dump(validation_results.to_json_dict(), f, indent=2)
 
         logging.info(f"Validation results saved: {output_file}")
-
-
-if __name__ == "__main__":
-    validate_all_texts()
