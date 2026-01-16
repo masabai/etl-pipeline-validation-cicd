@@ -5,18 +5,9 @@ This project showcases a **full A→Z cloud workflow**: extract FAERS data, tran
 
 ---
 # ETL Pipeline Testing
-button only
+
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new)
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com)
-
-
-gemini
-
-[![Open in GitHub Codespaces](https://github.com)](https://codespaces.new)
-
-
 
 
 > ⚠️ **Note:** This demo pipeline runs on the **dev branch** and will extract, transform, and optionally load data. Depending on your network and container spin-up, it may take several minutes to complete.
