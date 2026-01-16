@@ -2,7 +2,7 @@ name: FDA ETL Pipeline
 
 on:
   push:
-    branches: ["ma"]
+    branches: ["main"]
     paths:
       - "etl/**"
       - "requirements.txt"
