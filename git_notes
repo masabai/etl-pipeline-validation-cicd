@@ -3,6 +3,8 @@
 python -m venv .venv
 
 source .venv/bin/activate
+# Require for the very first time when codespace is created
+git remote add origin https://github.com/masabai/etl-pipeline-testing.git
 
 # create a branch from cs
 git checkout -b dev
@@ -22,6 +24,21 @@ git checkout main
 git merge dev
 git push
 
+
+# clean up ghose files
+sudo apt install git-filter-repo
+git filter-repo --path data/raw --path data/processed --invert-paths
+
+#update .gitigore
+/data/raw/
+/data/processed/
+
+
 # untrack
+git add .gitignore
+git commit -m "Ignore raw and processed data"
+
+
+git filter-repo --path data/raw --path data/processed --invert-paths --force
 
 

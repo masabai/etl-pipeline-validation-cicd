@@ -1,0 +1,16 @@
+# create a branch from cs
+git checkout -b dev
+
+# push - need only once
+git push --set-upstream origin dev 
+
+# Start working in Dev, commit changes
+git add .
+git commit -m "Add transform test"
+git push
+
+# merge dev -> main
+git checkout main
+git merge dev
+git push
+
