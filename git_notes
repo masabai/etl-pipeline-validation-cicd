@@ -39,4 +39,6 @@ git commit -m "Ignore raw and processed data"
 
 git filter-repo --path data/raw --path data/processed --invert-paths --force
 
+# not able to checkout main
+git rm --cached etl/__pycache__/pipeline.cpython-312.pyc
 
