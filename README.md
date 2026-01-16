@@ -9,7 +9,7 @@ This project showcases a **full A→Z cloud workflow**: extract FAERS data, tran
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/masabai/etl-pipeline-testing/codespaces/new)
 
-
+[![Open in GitHub Codespaces](https://github.com)](https://codespaces.new)
 
 
 
