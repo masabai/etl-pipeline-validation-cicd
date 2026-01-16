@@ -10,6 +10,7 @@ gpt+gemini
 
 [![Open in GitHub Codespaces](https://github.com)](https://codespaces.new)
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com)
 
 
 gemini
