@@ -5,10 +5,9 @@ This project showcases a **full A→Z cloud workflow**: extract FAERS data, tran
 
 ---
 # ETL Pipeline Testing
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)]
-gpt+gemini
+button only
 
-[![Open in GitHub Codespaces](https://github.com)](https://codespaces.new)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com)
 
