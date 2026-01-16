@@ -4,7 +4,7 @@ from pathlib import Path
 import logging
 import os
 from etl.extract import download_faers_data
-from etl.transform import load_txt_files, merge_and_save_all_tables, transform_demo, transform_generic
+from etl.transform import load_txt_files, merge_and_transform_one_by_one, transform_demo, transform_generic
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -19,18 +19,7 @@ logging.info(f"Extract complete. Files: {[f.name for f in downloaded_files]}")
 
 # ---------------- Transform ----------------
 dfs = load_txt_files(RAW_DIR)
-merged_dfs = merge_and_save_all_tables(dfs, PROCESSED_DIR)
-
-# Process & save each table one at a time (memory safe)
-for table_name, df in merged_dfs.items():
-    if table_name.lower() == 'demo':
-        df_t = transform_demo(df)
-    else:
-        df_t = transform_generic(df, table_name)
-
-    out_file = PROCESSED_DIR / f"merged_{table_name.lower()}.csv"
-    df_t.to_csv(out_file, index=False)
-    logging.info(f"Saved transformed table: {out_file} ({len(df_t)} rows)")
+merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
 
 # ---------------- Load ----------------
 """
