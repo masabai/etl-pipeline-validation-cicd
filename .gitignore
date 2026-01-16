@@ -1,33 +1,9 @@
 # ---------------- Data ----------------
-# Ignore raw and processed data
 /data/raw/
 /data/processed/
 
 # ---------------- Python ----------------
-# Bytecode / cache
+.venv/
 __pycache__/
-*.py[cod]
-*.pyo
-
-# Virtual environments
-venv/
-.env/
-.env.*
-
-# ---------------- Logs ----------------
-logs/
-*.log
-
-# ---------------- IDE / Editor ----------------
-# VS Code / Codespaces
-.vscode/
-.history/
-
-# JetBrains / PyCharm
-.idea/
-
-# ---------------- System files ----------------
-# macOS
-.DS_Store
-# Windows
-Thumbs.db
+*.pyc
+.ipynb_checkpoints/
