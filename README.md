@@ -8,7 +8,8 @@ This project showcases a **full A→Z cloud workflow**: extract FAERS data, tran
 
 Click the button below to **open a Codespace** and run the ETL pipeline automatically (limited to Q1 for demo purposes):
 
-[![Open Demo in Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?quickstart=1&ref=dev)
+[![Open Demo in Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new)
+
 
 
 > ⚠️ **Note:** This demo pipeline runs on the **dev branch** and will extract, transform, and optionally load data. Depending on your network and container spin-up, it may take several minutes to complete.
