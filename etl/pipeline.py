@@ -2,7 +2,7 @@ from pathlib import Path
 import logging
 from etl.extract import download_faers_data
 # from validation.extract_gx import validate_all_texts
-# from etl.transform import load_txt_files, merge_and_save_all_tables
+from etl.transform import load_txt_files, merge_and_save_all_tables
 import warnings
 
 # ---------------- Setup ----------------
@@ -32,7 +32,6 @@ TESTS_DIR.mkdir(parents=True, exist_ok=True)
 downloaded_files = download_faers_data(raw_dir=RAW_DIR)
 logging.info(f"Extract complete. Files: {[f.name for f in downloaded_files]}")
 
-# ---------------- Transform / Validation placeholders ----------------
-# Example: later you can use PROCESSED_DIR for outputs
-# merged_data = merge_and_save_all_tables(RAW_DIR, PROCESSED_DIR)
-# validate_all_texts(PROCESSED_DIR)
+# ---------------- Transform ----------------
+dfs = load_txt_files(RAW_DIR)
+merge_and_save_all_tables(dfs, PROCESSED_DIR)
