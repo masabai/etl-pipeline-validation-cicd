@@ -1,10 +1,11 @@
+
 {
   "name": "ETL Pipeline Testing",
   "build": {
     "dockerfile": "Dockerfile"
   },
   "postCreateCommand": "pip install -r requirements.txt && python -m etl.pipeline --demo-q1",
-  "remoteUser": "codespace"
+  "remoteUser": "vscode"
 }
 
 
