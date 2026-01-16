@@ -1,20 +1,22 @@
 # ETLPipelineTesting
 
-A testing-focused ETL pipeline project designed to demonstrate **how production data pipelines are validated, tested, and deployed**, not just built.
+[![ETL CI/CD Workflow](https://github.com/masabai/etl-pipeline-testing/actions/workflows/fda-etl.yml/badge.svg)](https://github.com/masabai/etl-pipeline-testing/actions/workflows/fda-etl.yml)
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/masabai/etl-pipeline-testing)
+
+A **cloud-first, CI/CD-driven ETL pipeline** built entirely using **GitHub Actions and GitHub Codespaces**, focused on **testing, validation, and automation** rather than local execution.
 
 ### What this project does
-
-* Extracts FDA FAERS ASCII (TXT) data directly from the source
-* Transforms and merges quarterly datasets into clean, analytics-ready tables
-* Applies data quality validation using Great Expectations (schema, nulls, row counts)
-* Loads processed data into Snowflake (toggleable to keep CI/CD safe)
-* Automates the pipeline using GitHub Actions and GitHub Codespaces
+- Executes the full ETL workflow in the cloud using GitHub Actions and Codespaces
+- Extracts FDA FAERS ASCII (TXT) data directly from the source
+- Transforms and merges quarterly datasets into analytics-ready tables
+- Validates data quality using Great Expectations (schema, nulls, row counts)
+- Loads processed data into Snowflake (toggleable for CI safety)
 
 ### Testing focus
+- Unit tests for extract and transform logic  
+- Feature tests validating dataset-level expectations  
+- Integration tests across extract → transform → load  
+- Performance tests to observe behavior on large datasets  
 
-* Unit tests for extract and transform logic
-* Feature tests validating business-level expectations
-* Integration tests across extract → transform → load
-* Performance tests to detect regressions on large datasets
-
-**Goal:** showcase real-world data engineering practices around **ETL testing, validation, and CI/CD**, aligned with production workflows.
+**Goal:** showcase an **end-to-end cloud ETL workflow**, demonstrating practical understanding of **CI/CD automation, data testing, and validation** using industry-standard tools.
