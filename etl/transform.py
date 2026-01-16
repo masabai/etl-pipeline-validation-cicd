@@ -22,7 +22,7 @@ def load_txt_files(raw_dir: Path):
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
         dfs[txt_file.stem] = pd.read_csv(txt_file, sep="$", dtype=str)
-        demo = pd.read_csv('merged_demo.csv', dtype={'to_mfr': str}, low_memory=False)
+#        demo = pd.read_csv('merged_demo.csv', dtype={'to_mfr': str}, low_memory=False)
 
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
