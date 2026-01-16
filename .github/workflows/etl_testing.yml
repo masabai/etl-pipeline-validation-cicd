@@ -5,14 +5,14 @@ on:
     branches: ["main"]
     paths:
       - "etl/**"
-      - "requirements.txt"
+      #- "requirements.txt"
       - ".github/workflows/**"
   pull_request:
     branches: ["main"]
     paths:
       - "etl/**"
       - "db/**"
-      - "requirements.txt"
+      #- "requirements.txt"
       - ".github/workflows/**"
 
 jobs:
