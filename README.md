@@ -1,6 +1,7 @@
 # ETLPipelineTesting
 
-[![ETL CI/CD Workflow](https://github.com/masabai/etl-pipeline-testing/actions/workflows/fda-etl.yml/badge.svg)](https://github.com/masabai/etl-pipeline-testing/actions/workflows/fda-etl.yml)
+
+[![ETL CI/CD Workflow](https://github.com/masabai/etl-pipeline-testing/actions/workflows/fda-etl.yml/badge.svg)](https://github.com/masabai/etl-pipeline-testing/actions/runs/21079093356)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/masabai/etl-pipeline-testing)
 
