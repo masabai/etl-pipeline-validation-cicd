@@ -37,12 +37,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Optional: Check Snowflake secrets
-      - name: Verify Snowflake secrets
+      - name: Detect Snowflake secrets
         run: |
           if [ -z "$SNOW_USER" ]; then
-            echo "Snowflake secrets not found! Skipping load."
-
+            echo "RUN_SNOWFLAKE_LOAD=0" >> $GITHUB_ENV
+            echo "Snowflake secrets missing → load disabled"
+          else
+            echo "RUN_SNOWFLAKE_LOAD=1" >> $GITHUB_ENV
+            echo "Snowflake secrets detected → load enabled"
+          fi
+      
       # Run ETL pipeline (memory safe, demo Q1 only)
       - name: Run ETL pipeline for demo
         run: python -m etl.pipeline --demo-q1
