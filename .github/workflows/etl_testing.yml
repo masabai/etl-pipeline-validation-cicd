@@ -2,17 +2,17 @@ name: FDA ETL Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: ["ma"]
     paths:
       - "etl/**"
-      #- "requirements.txt"
+      - "requirements.txt"
       - ".github/workflows/**"
   pull_request:
     branches: ["main"]
     paths:
       - "etl/**"
       - "db/**"
-      #- "requirements.txt"
+      - "requirements.txt"
       - ".github/workflows/**"
 
 jobs:
