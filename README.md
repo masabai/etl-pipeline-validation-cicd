@@ -11,10 +11,6 @@ gpt+gemini
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com)
 
 
-gpt
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/masabai/etl-pipeline-testing/codespaces/new)
-
 gemini
 
 [![Open in GitHub Codespaces](https://github.com)](https://codespaces.new)
