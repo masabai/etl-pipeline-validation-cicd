@@ -4,13 +4,11 @@ An ETL pipeline project focused on **testing and validation**, designed to mirro
 This project showcases a **full A→Z cloud workflow**: extract FAERS data, transform, validate (Great Expectations), and optionally load to Snowflake — all automated via **CI/CD in GitHub Actions** and reproducible in **Codespaces**.
 
 ---
-## Demo
-
-Click the button below to **open a Codespace** and run the ETL pipeline automatically (limited to Q1 for demo purposes):
+# ETL Pipeline Testing
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/masabai/etl-pipeline-testing/codespaces/new)
 
-
+This repository contains an ETL pipeline demo project...
 
 
 
