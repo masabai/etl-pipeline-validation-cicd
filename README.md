@@ -8,7 +8,8 @@ This project showcases a **full A→Z cloud workflow**: extract FAERS data, tran
 
 gpt+gemini
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com)
+[![Open in GitHub Codespaces](https://github.com)](https://codespaces.new)
+
 
 
 gemini
