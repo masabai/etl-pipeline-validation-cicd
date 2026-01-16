@@ -1,8 +1,6 @@
-# pip install -r requirements.txt
-# Create virtual env in .venv folder
-python -m venv .venv
-
+# Activate env
 source .venv/bin/activate
+
 # Require for the very first time when codespace is created
 git remote add origin https://github.com/masabai/etl-pipeline-testing.git
 
