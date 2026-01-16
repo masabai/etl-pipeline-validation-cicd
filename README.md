@@ -1,23 +1,37 @@
 # ETL Pipeline Testing
 
-[![Run ETL Workflow](https://img.shields.io)](https://github.com)
-[![ETL CI/CD Workflow](https://github.com/masabai/etl-pipeline-testing/actions/workflows/fda-etl.yml/badge.svg)](https://github.com/masabai/etl-pipeline-testing/actions/runs/21079093356)
+An ETL pipeline project focused on **testing and validation**, designed to mirror how data pipelines are structured and tested in real-world cloud environments.  
+This project showcases a **full A→Z cloud workflow**: extract FAERS data, transform, validate (Great Expectations), and optionally load to Snowflake — all automated via **CI/CD in GitHub Actions** and reproducible in **Codespaces**.
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/masabai/etl-pipeline-testing)
+---
 
-A **cloud-first, CI/CD-driven ETL pipeline** built entirely using **GitHub Actions and GitHub Codespaces**, focused on **testing, validation, and automation** rather than local execution.
+## Demo
 
-### What this project does
-- Executes the full ETL workflow in the cloud using GitHub Actions and Codespaces
-- Extracts FDA FAERS ASCII (TXT) data directly from the source
-- Transforms and merges quarterly datasets into analytics-ready tables
-- Validates data quality using Great Expectations (schema, nulls, row counts)
-- Loads processed data into Snowflake (toggleable for CI safety)
+Click the button below to **open a Codespace** and run the ETL pipeline automatically (limited to Q1 for demo purposes):
 
-### Testing focus
-- Unit tests for extract and transform logic  
-- Feature tests validating dataset-level expectations  
-- Integration tests across extract → transform → load  
-- Performance tests to observe behavior on large datasets  
+[![Open Demo in Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?skip_quickstart=true&machine=basicLinux32gb&repo=1135282797&ref=main&geo=UsWest)
 
-**Goal:** showcase an **end-to-end cloud ETL workflow**, demonstrating practical understanding of **CI/CD automation, data testing, and validation** using industry-standard tools.
+> ⚠️ **Note:** The demo pipeline will extract, transform, and optionally load data. Depending on your network and container spin-up, it may take several minutes to complete.
+
+---
+
+## Features
+
+- Unit, feature, integration, and performance tests for ETL
+- Automated validation using **Great Expectations**
+- CI/CD via **GitHub Actions**
+- Cloud-first design: no local setup required
+- Snowflake optional load for production testing
+- All scripts reproducible in **GitHub Codespaces**
+
+---
+
+## Quick Start
+
+1. Click the **Demo button** above to open a Codespace.  
+2. The ETL pipeline will start automatically via `postCreateCommand` in `.devcontainer/devcontainer.json`.  
+3. Explore `data/raw` and `data/processed` folders for input/output files.  
+4. Optional: Run tests via:
+
+```bash
+pytest tests/
