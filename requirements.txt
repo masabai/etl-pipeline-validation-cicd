@@ -1,17 +1,19 @@
-# pip install -r requirements.txt
+# Core ETL
+pandas>=2.0,<2.3
+requests
+pyyaml
 
-# ETL + DB connections
-snowflake-connector-python[pandas]==3.1.1  # adjust version if needed
+# Snowflake
+snowflake-connector-python[pandas]>=3.1,<4.0
+
+# Data quality
+great-expectations>=1.2,<1.4
+
+# dbt
+dbt-core==1.8.0
+dbt-postgres==1.8.0
 
 # Testing
-pytest==8.3.2
-#great-expectations==1.34.0
-
-# dbt (pick adapter if needed)
-dbt-core==1.8.0
-dbt-postgres==1.8.0  # or dbt-snowflake if using Snowflake
-
-# Optional extras
-pandas==2.1.1
+pytest>=8.0,<9.0
 
 
