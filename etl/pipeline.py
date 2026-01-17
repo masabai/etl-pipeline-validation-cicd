@@ -4,6 +4,7 @@ from etl.extract import download_faers_data
 # from validation.extract_gx import validate_all_texts
 from etl.transform import load_txt_files, merge_and_transform_one_by_one
 import warnings
+import os
 
 # ---------------- Setup ----------------
 logging.basicConfig(level=logging.INFO, format="%(message)s")
