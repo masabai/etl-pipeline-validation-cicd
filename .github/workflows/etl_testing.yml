@@ -1,4 +1,4 @@
-name: FDA ETL Pipeline #last run 1/16/26
+name: FDA ETL Pipeline
 
 on:
   push:
@@ -6,72 +6,53 @@ on:
     paths:
       - "etl/**"
       - "requirements.txt"
-      - ".github/workflows/**"
   pull_request:
     branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
       - "requirements.txt"
-      - ".github/workflows/**"
 
 jobs:
   etl-demo:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # safe upper bound for GitHub Actions demo
+    timeout-minutes: 30
 
     steps:
-      # Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Detect Snowflake secrets
-        run: |
-          if [ -z "$SNOW_USER" ]; then
-            echo "RUN_SNOWFLAKE_LOAD=0" >> $GITHUB_ENV
-            echo "Snowflake secrets missing → load disabled"
-          else
-            echo "RUN_SNOWFLAKE_LOAD=1" >> $GITHUB_ENV
-            echo "Snowflake secrets detected → load enabled"
-          fi
-      
-      # Run ETL pipeline (memory safe, demo Q1 only)
       - name: Run ETL pipeline for demo
         run: python -m etl.pipeline --demo-q1
         env:
-          RUN_SNOWFLAKE_LOAD: 1  # skip Snowflake in demo
+          RUN_SNOWFLAKE_LOAD: 1  # Demo mode: skip Snowflake
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
           SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
           SNOW_WAREHOUSE: ${{ secrets.SNOW_WAREHOUSE }}
+          TMPDIR: /tmp  # ETL writes to /tmp
 
-      # List processed CSVs
       - name: List processed CSVs
-        run: ls -lh data/processed/*.csv || echo "No processed files found"
+        run: ls -lh /tmp/data/processed/*.csv || echo "No processed files found"
 
-      # Upload raw FAERS .txt files
       - name: Upload raw FAERS files
         uses: actions/upload-artifact@v4
         with:
           name: faers-txt
-          path: data/raw/*.txt
+          path: /tmp/data/raw/*.txt
 
-      # Upload merged CSVs (after transform)
       - name: Upload merged CSVs
         uses: actions/upload-artifact@v4
         with:
           name: faers-processed
-          path: data/processed/*.csv
-
+          path: /tmp/data/processed/*.csv
