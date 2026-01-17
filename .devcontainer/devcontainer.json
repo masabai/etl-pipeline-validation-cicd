@@ -4,8 +4,9 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "postCreateCommand": "pip install -r requirements.txt && python -m etl.pipeline --demo-q1",
+  "postAttachCommand": "pip install -r requirements.txt && python -m etl.pipeline --demo-q1",
   "remoteUser": "vscode"
 }
+
 
 

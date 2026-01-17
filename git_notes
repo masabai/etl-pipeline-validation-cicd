@@ -1,4 +1,5 @@
-# Activate env
+# Create and Activate env
+python3 -m venv .venv
 source .venv/bin/activate
 
 # Require for the very first time when codespace is created
