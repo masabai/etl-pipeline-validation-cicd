@@ -42,8 +42,8 @@ def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
         logging.info(f"Deleted old file: {f.name}")
 
     # Determine table prefixes (before quarter, e.g., DEMO25Q1 -> DEMO)
-    table_prefixes = set(k[:-5] for k in dfs_dict.keys())  # remove last 5 chars: 25Q1/25Q2
-
+    table_prefixes = set(k[:-4] for k in dfs_dict.keys())  # remove last 5 chars: 25Q1/25Q2
+   
     for prefix in table_prefixes:
         # Merge all quarters for this table
         table_dfs = [dfs_dict[k] for k in dfs_dict if k.startswith(prefix)]
