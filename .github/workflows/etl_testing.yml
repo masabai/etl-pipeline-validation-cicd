@@ -33,6 +33,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # ✅ Ensure tmp directories exist
+      - name: Prepare tmp directories
+        run: |
+          mkdir -p /tmp/data/processed
+          mkdir -p /tmp/data/raw
+
       - name: Run ETL pipeline for demo
         run: python -m etl.pipeline 
         env:
@@ -46,14 +52,23 @@ jobs:
       - name: List processed CSVs
         run: ls -lh /tmp/data/processed/*.csv || echo "No processed files found"
 
+      # ✅ Artifact uploads: only if files exist
       - name: Upload raw FAERS files
-        uses: actions/upload-artifact@v4
-        with:
-          name: faers-txt
-          path: /tmp/data/raw/*.txt
+        if: success()
+        run: |
+          if compgen -G "/tmp/data/raw/*.txt" > /dev/null; then
+            echo "Uploading raw FAERS files..."
+            gh workflow run actions/upload-artifact@v4 --name faers-txt --path /tmp/data/raw/*.txt
+          else
+            echo "No raw FAERS files to upload"
+          fi
 
       - name: Upload merged CSVs
-        uses: actions/upload-artifact@v4
-        with:
-          name: faers-processed
-          path: /tmp/data/processed/*.csv
+        if: success()
+        run: |
+          if compgen -G "/tmp/data/processed/*.csv" > /dev/null; then
+            echo "Uploading merged CSVs..."
+            gh workflow run actions/upload-artifact@v4 --name faers-processed --path /tmp/data/processed/*.csv
+          else
+            echo "No merged CSVs to upload"
+          fi
