@@ -1,0 +1,74 @@
+name: FDA ETL Pipeline   #test
+
+on:
+  push:
+    branches: ["dev"]
+    paths:
+      - "etl/**"
+      - "db/**"
+      - "requirements.txt"
+  pull_request:
+    branches: ["dev"]
+    paths:
+      - "etl/**"
+      - "db/**"
+      - "requirements.txt"
+
+jobs:
+  etl-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ✅ Ensure tmp directories exist
+      - name: Prepare tmp directories
+        run: |
+          mkdir -p /tmp/data/processed
+          mkdir -p /tmp/data/raw
+
+      - name: Run ETL pipeline for demo
+        run: python -m etl.pipeline 
+        env:
+          RUN_SNOWFLAKE_LOAD: 0  # Demo mode: skip Snowflake
+          SNOW_USER: ${{ secrets.SNOW_USER }}
+          SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
+          SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
+          SNOW_WAREHOUSE: ${{ secrets.SNOW_WAREHOUSE }}
+          TMPDIR: /tmp  # ETL writes to /tmp
+
+      - name: List processed CSVs
+        run: ls -lh /tmp/data/processed/*.csv || echo "No processed files found"
+
+      # ✅ Artifact uploads: only if files exist
+      - name: Upload raw FAERS files
+        if: success()
+        run: |
+          if compgen -G "/tmp/data/raw/*.txt" > /dev/null; then
+            echo "Uploading raw FAERS files..."
+            gh workflow run actions/upload-artifact@v4 --name faers-txt --path /tmp/data/raw/*.txt
+          else
+            echo "No raw FAERS files to upload"
+          fi
+
+      - name: Upload merged CSVs
+        if: success()
+        run: |
+          if compgen -G "/tmp/data/processed/*.csv" > /dev/null; then
+            echo "Uploading merged CSVs..."
+            gh workflow run actions/upload-artifact@v4 --name faers-processed --path /tmp/data/processed/*.csv
+          else
+            echo "No merged CSVs to upload"
+          fi
