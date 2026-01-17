@@ -10,9 +10,14 @@ from etl.load import load_csv_to_snowflake
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 # ---------------- Directories ----------------
-RAW_DIR = Path("data/raw")
+BASE_DIR = Path.cwd()  
+
+# Raw and processed data
+RAW_DIR = BASE_DIR / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
-PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
+
+PROCESSED_DIR = BASE_DIR / "data" / "processed"
+PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------- Extract ----------------
 downloaded_files = download_faers_data(raw_dir=RAW_DIR)
