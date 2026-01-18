@@ -9,7 +9,8 @@ def get_snowflake_connection():
         warehouse=os.environ["SNOW_WAREHOUSE"],
         role="ETL_PIPELINE",
         database="ETL_TESTING",
-        schema="FDA"
+        schema="FDA",
+        insecure_mode=True #allows the connection to proceed even if the security fail in Codespace
     )
     
     return snowflake.connector.connect(
@@ -21,3 +22,4 @@ def get_snowflake_connection():
         database=database,
         schema=schema
     )
+

@@ -1,0 +1,3 @@
+# to run load step set env
+export RUN_SNOWFLAKE_LOAD=1
+python -m etl.pipeline
