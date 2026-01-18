@@ -32,6 +32,7 @@ def transform_generic(df, table_name: str):
 
 def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
     """
+    
     Merge quarters and transform one table at a time (memory safe)
     """
     output_dir.mkdir(parents=True, exist_ok=True)
