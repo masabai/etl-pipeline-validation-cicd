@@ -8,6 +8,11 @@ from etl.transform import load_txt_files, merge_and_transform_one_by_one
 import warnings
 import pandas as pd
 
+
+# Show all columns when printing
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 200)  # optional, widen display
+
 # ---------------- Setup ----------------
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 warnings.filterwarnings("ignore")
@@ -27,5 +32,5 @@ PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 downloaded_files = download_faers_data(raw_dir=RAW_DIR)
 demo = pd.read_csv(RAW_DIR / "DEMO25Q1.txt", sep="$", dtype=str, low_memory=False)
 drug = pd.read_csv(RAW_DIR / "DRUG25Q1.txt", sep="$", dtype=str, low_memory=False)
-print(demo.info())
+print(demo.head())
 #print(drug.info())
