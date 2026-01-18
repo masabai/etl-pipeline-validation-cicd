@@ -2,13 +2,13 @@ name: FDA ETL Pipeline   #test
 
 on:
   push:
-    branches: ["main"]
+    branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
       - "requirements.txt"
   pull_request:
-    branches: ["main"]
+    branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
