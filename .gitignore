@@ -1,6 +1,6 @@
 /data/raw/
 /data/processed/
-/temp/
+/temp
 
 .venv/
 
