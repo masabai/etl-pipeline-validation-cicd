@@ -7,7 +7,7 @@ from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-# ------------------ Load ------------------ #
+# ------------------ Load TXT Files ------------------ #
 def load_txt_files(raw_dir: Path):
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
@@ -33,7 +33,7 @@ def clean_table(df, table_name):
     for col in df.select_dtypes(include='object').columns:
         df[col] = df[col].str.strip()
 
-    # Type conversion
+    # Type conversion for IDs
     for col in ['primaryid', 'caseid']:
         if col in df.columns:
             df[col] = df[col].astype(str)
@@ -46,28 +46,24 @@ def clean_table(df, table_name):
             except Exception:
                 pass
 
-    # ------------------ Table-specific optional fills/mappings ------------------ #
+    # Table-specific optional mappings/fills
     if table_name == 'DEMO':
-        # Map sex codes, fill missing age_grp
         if 'sex' in df.columns:
             df['sex'] = df['sex'].replace({'M': 'Male', 'F': 'Female'}).fillna('Unknown')
         if 'age_grp' in df.columns:
             df['age_grp'] = df['age_grp'].fillna('Unknown')
-
     elif table_name == 'DRUG':
         if 'dose_unit' in df.columns:
             df['dose_unit'] = df['dose_unit'].fillna('UNKNOWN')
         if 'exp_dt' in df.columns:
             df['exp_dt'] = pd.to_datetime(df['exp_dt'], errors='coerce')
 
-    # Other tables minimal cleaning; keep nulls in optional fields
-
     # Add batch metadata
     df['load_ts'] = datetime.now()
 
     return df
 
-# ------------------ Table-specific transform ------------------ #
+# ------------------ Table-specific Transform ------------------ #
 def transform_demo(df):
     return clean_table(df, 'DEMO')
 
@@ -78,33 +74,34 @@ def transform_generic(df, table_name):
 def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
     """
     Merge quarters and transform one table at a time (memory safe)
+    Cleanup happens ONCE before loop to avoid deleting files mid-run.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Clear old merged CSVs
+    # -------------------- CLEANUP (Run once!) -------------------- #
+    logging.info("Cleaning processed directory...")
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
         logging.info(f"Deleted old file: {f.name}")
 
+    # -------------------- MERGE & TRANSFORM -------------------- #
     TABLES = ["DEMO", "DRUG", "REAC", "THER", "INDI", "OUTC", "RPSR"]
 
     for table in TABLES:
-        # Merge all quarters for this table
+        # Gather all available quarters for this table
         table_dfs = [dfs_dict[k] for k in dfs_dict if k.upper().startswith(table)]
         if not table_dfs:
-            logging.warning(f"⚠️ No files found for table {table}, skipping")
+            logging.warning(f"⚠️ No raw files found for table {table}, skipping")
             continue
 
         merged_df = pd.concat(table_dfs, ignore_index=True)
-
-        # Transform & clean
         merged_df = transform_demo(merged_df) if table == "DEMO" else transform_generic(merged_df, table)
 
         # Save CSV
         out_file = output_dir / f"merged_{table.lower()}.csv"
         merged_df.to_csv(out_file, index=False)
 
-        # Logging
+        # Logging summary
         before_rows = sum(len(df) for df in table_dfs)
         after_rows = len(merged_df)
         dropped = before_rows - after_rows
@@ -112,4 +109,5 @@ def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
         logging.info(f"{table} staged → {after_rows} rows")
 
     logging.info("All tables merged & transformed successfully.")
+
  
