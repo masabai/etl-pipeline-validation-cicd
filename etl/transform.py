@@ -112,3 +112,4 @@ def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
         logging.info(f"{table} staged → {after_rows} rows")
 
     logging.info("All tables merged & transformed successfully.")
+ 
