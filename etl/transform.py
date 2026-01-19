@@ -16,7 +16,6 @@ def load_txt_files(raw_dir):
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
 
-
 # ------------------ Cleaning Functions ------------------ #
 def clean_common_fields(df):
     df = df.copy()
@@ -33,7 +32,7 @@ def clean_common_fields(df):
 
     # Fill missing strings
     for col in df.select_dtypes(include="object").columns:
-        df[col] = df[col].fillna("")
+        df[col] = df[col].fillna("Unknown")
 
     # Normalize IDs
     if "primaryid" in df.columns:
