@@ -9,74 +9,87 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 def load_txt_files(raw_dir: Path):
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
-        # low_memory=False is recommended for 2026 FAERS datasets to avoid DtypeWarnings
+        # low_memory=False is best practice for FAERS 2026 data volume
         dfs[txt_file.stem] = pd.read_csv(txt_file, sep="$", dtype=str, low_memory=False)
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
 
-# ------------------ Cleaning ------------------ #
+# ------------------ The "Full" Cleaning Logic ------------------ #
 def clean_table(df, table_name):
-    # Pandas 3.0+ uses Copy-on-Write by default, but explicit .copy() 
-    # remains best practice for pipeline clarity.
-    df = df.copy()
+    """
+    Applied to all 7 tables: Handles nulls, duplicates, strings, types, and mappings.
+    """
+    df = df.copy() # Keeps function 'pure' and prevents side effects
 
+    # 1. Standardize column names (lowercase and no whitespace)
     df.columns = [c.lower().strip() for c in df.columns]
 
-    # Mandatory FAERS deduplication: drops records with missing IDs
-    if 'primaryid' in df.columns and 'caseid' in df.columns:
-        df = df.dropna(subset=['primaryid', 'caseid'])
+    # 2. Drop if primaryid or caseid are null (Crucial for FAERS integrity)
+    id_cols = [c for c in ['primaryid', 'caseid'] if c in df.columns]
+    if id_cols:
+        df = df.dropna(subset=id_cols)
 
-    # Deduplicate rows: This explains the ~131 row drop in DEMO
+    # 3. Drop duplicates
     df = df.drop_duplicates()
 
+    # 4. String cleaning (strip whitespace from all text)
     for col in df.select_dtypes(include='object').columns:
         df[col] = df[col].str.strip()
 
-    # Normalize Dates
+    # 5. Type conversion for IDs (Ensure they are strings for database consistency)
+    for col in id_cols:
+        df[col] = df[col].astype(str)
+
+    # 6. Normalize date columns (anything containing 'dt')
     for col in df.columns:
         if 'dt' in col:
             df[col] = pd.to_datetime(df[col], errors='coerce')
 
-    # Table-specific normalization
+    # 7. Table-specific mappings/fills
     if table_name == 'DEMO':
         if 'sex' in df.columns:
             df['sex'] = df['sex'].replace({'M': 'Male', 'F': 'Female'}).fillna('Unknown')
-    
+    elif table_name == 'DRUG':
+        if 'dose_unit' in df.columns:
+            df['dose_unit'] = df['dose_unit'].fillna('UNKNOWN')
+
+    # 8. Add batch metadata
     df['load_ts'] = datetime.now()
+
     return df
 
 # ------------------ Merge & Transform ------------------ #
 def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. CLEANUP (Run once, outside the loop)
-    logging.info("Cleaning processed directory...")
+    # Cleanup processed folder ONCE at the start
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
 
-    # 2. TARGET TABLES
-    TABLES = ["DEMO", "DRUG", "REAC", "THER", "INDI", "OUTC", "RPSR"]
+    # Use your proven 7-table logic from yesterday
+    BASE_TABLES = ["DEMO", "DRUG", "REAC", "THER", "INDI", "OUTC", "RPSR"]
 
-    for table in TABLES:
-        # FIX: Use 'in' rather than 'startswith' to catch filenames like 'DEMO25Q1'
-        table_dfs = [dfs_dict[k] for k in dfs_dict if table in k.upper()]
+    for table in BASE_TABLES:
+        # Match keys (e.g., DEMO matches DEMO25Q1 and DEMO25Q2)
+        matching_keys = [k for k in dfs_dict.keys() if k.upper().startswith(table)]
         
-        if not table_dfs:
-            logging.warning(f"⚠️ No raw files found for table {table}, skipping")
+        if not matching_keys:
+            logging.warning(f"⚠️ Skipping {table}: No files found.")
             continue
 
-        merged_df = pd.concat(table_dfs, ignore_index=True)
-        
-        # Apply transformation
-        merged_df = clean_table(merged_df, table)
+        # Merge quarters
+        merged_df = pd.concat([dfs_dict[k] for k in matching_keys], ignore_index=True)
 
-        # 3. SAVE CSV with unique filename
+        # Apply the FULL cleaning logic
+        before_count = len(merged_df)
+        merged_df = clean_table(merged_df, table)
+        after_count = len(merged_df)
+
+        # Save CSV
         out_file = output_dir / f"merged_{table.lower()}.csv"
         merged_df.to_csv(out_file, index=False)
+        
+        logging.info(f"{table} → Merged {len(matching_keys)} files. Rows: {before_count} -> {after_count} (Dropped {before_count - after_count})")
 
-        # Logging summary
-        before_rows = sum(len(df) for df in table_dfs)
-        after_rows = len(merged_df)
-        logging.info(f"{table} → before: {before_rows}, after: {after_rows}, dropped: {before_rows - after_rows}")
+    logging.info("All 7 tables cleaned and merged successfully.")
 
-    logging.info("All tables merged & transformed successfully.")
