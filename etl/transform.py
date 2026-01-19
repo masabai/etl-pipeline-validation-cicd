@@ -95,7 +95,14 @@ def merge_and_transform_one_by_one(dfs_dict, output_dir):
         logging.info(f"Deleted old file: {f.name}")
 
     # Determine table prefixes (DEMO25Q1 → DEMO)
-    table_prefixes = set(k[:-4] for k in dfs_dict.keys())
+    #table_prefixes = set(k[:-4] for k in dfs_dict.keys())
+
+    import re
+
+    table_prefixes = set(
+    re.match(r"[A-Z]+", k).group()
+    for k in dfs_dict.keys()
+    )
 
     for prefix in table_prefixes:
         table_dfs = [dfs_dict[k] for k in dfs_dict if k.startswith(prefix)]
