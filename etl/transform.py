@@ -1,3 +1,5 @@
+# etl/transform.py
+
 import pandas as pd
 from pathlib import Path
 import logging
@@ -5,128 +7,108 @@ from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-
-# ------------------ Load TXT Files ------------------ #
-def load_txt_files(raw_dir):
+# ------------------ Load ------------------ #
+def load_txt_files(raw_dir: Path):
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
-        dfs[txt_file.stem] = pd.read_csv(
-            txt_file, sep="$", dtype=str, low_memory=False
-        )
+        dfs[txt_file.stem] = pd.read_csv(txt_file, sep="$", dtype=str, low_memory=False)
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
 
-# ------------------ Cleaning Functions ------------------ #
-def clean_common_fields(df):
+# ------------------ Cleaning ------------------ #
+def clean_table(df, table_name):
     df = df.copy()
 
-    # Clean column names
+    # Standardize column names
     df.columns = [c.lower().strip() for c in df.columns]
+
+    # Drop rows where primaryid or caseid are null
+    if 'primaryid' in df.columns and 'caseid' in df.columns:
+        df = df.dropna(subset=['primaryid', 'caseid'])
 
     # Drop duplicates
     df = df.drop_duplicates()
 
-    # Drop rows only if BOTH primaryid & caseid are null
-    if "primaryid" in df.columns and "caseid" in df.columns:
-        df = df[~df[["primaryid", "caseid"]].isnull().all(axis=1)]
+    # Strip strings
+    for col in df.select_dtypes(include='object').columns:
+        df[col] = df[col].str.strip()
 
-    # Fill missing strings
-    for col in df.select_dtypes(include="object").columns:
-        df[col] = df[col].fillna("Unknown")
+    # Type conversion
+    for col in ['primaryid', 'caseid']:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
 
-    # Normalize IDs
-    if "primaryid" in df.columns:
-        df["primaryid"] = df["primaryid"].astype(str).str.strip()
-    if "caseid" in df.columns:
-        df["caseid"] = df["caseid"].astype(str).str.strip()
-
-    return df
-
-
-def transform_demo(df):
-    df = df.copy()
-    df["load_ts"] = datetime.now()
-
-    # DEMO-specific cleaning
-    if "age" in df.columns:
-        df["age"] = pd.to_numeric(df["age"], errors="coerce")
-    if "wt" in df.columns:
-        df["wt"] = pd.to_numeric(df["wt"], errors="coerce")
-    if "sex" in df.columns:
-        df["sex"] = df["sex"].str.upper().str.strip()
-
-    # Normalize date columns
+    # Normalize date columns (any column containing 'dt')
     for col in df.columns:
-        if "dt" in col or "date" in col:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+        if 'dt' in col:
+            try:
+                df[col] = pd.to_datetime(df[col], errors='coerce')
+            except Exception:
+                pass
 
-    df = clean_common_fields(df)
+    # ------------------ Table-specific optional fills/mappings ------------------ #
+    if table_name == 'DEMO':
+        # Map sex codes, fill missing age_grp
+        if 'sex' in df.columns:
+            df['sex'] = df['sex'].replace({'M': 'Male', 'F': 'Female'}).fillna('Unknown')
+        if 'age_grp' in df.columns:
+            df['age_grp'] = df['age_grp'].fillna('Unknown')
+
+    elif table_name == 'DRUG':
+        if 'dose_unit' in df.columns:
+            df['dose_unit'] = df['dose_unit'].fillna('UNKNOWN')
+        if 'exp_dt' in df.columns:
+            df['exp_dt'] = pd.to_datetime(df['exp_dt'], errors='coerce')
+
+    # Other tables minimal cleaning; keep nulls in optional fields
+
+    # Add batch metadata
+    df['load_ts'] = datetime.now()
+
     return df
 
-
-def transform_drug(df):
-    df = df.copy()
-    df["load_ts"] = datetime.now()
-
-    # DRUG-specific cleaning
-    if "drugname" in df.columns:
-        df["drugname"] = df["drugname"].str.upper().str.strip()
-    if "role_cod" in df.columns:
-        df["role_cod"] = df["role_cod"].str.upper().str.strip()
-
-    df = clean_common_fields(df)
-    return df
-
+# ------------------ Table-specific transform ------------------ #
+def transform_demo(df):
+    return clean_table(df, 'DEMO')
 
 def transform_generic(df, table_name):
-    df = df.copy()
-    df["load_ts"] = datetime.now()
-    df = clean_common_fields(df)
-    return df
+    return clean_table(df, table_name)
 
-
-# ------------------ Merge + Transform ------------------ #
-def merge_and_transform_one_by_one(dfs_dict, output_dir):
+# ------------------ Merge & Transform ------------------ #
+def merge_and_transform_one_by_one(dfs_dict: dict, output_dir: Path):
+    """
+    Merge quarters and transform one table at a time (memory safe)
+    """
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Remove old merged CSVs
+    # Clear old merged CSVs
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
         logging.info(f"Deleted old file: {f.name}")
 
-    # Determine table prefixes (DEMO25Q1 → DEMO)
-    #table_prefixes = set(k[:-4] for k in dfs_dict.keys())
+    TABLES = ["DEMO", "DRUG", "REAC", "THER", "INDI", "OUTC", "RPSR"]
 
-    import re
+    for table in TABLES:
+        # Merge all quarters for this table
+        table_dfs = [dfs_dict[k] for k in dfs_dict if k.upper().startswith(table)]
+        if not table_dfs:
+            logging.warning(f"⚠️ No files found for table {table}, skipping")
+            continue
 
-    table_prefixes = set(
-    re.match(r"[A-Z]+", k).group()
-    for k in dfs_dict.keys()
-    )
-
-    for prefix in table_prefixes:
-        table_dfs = [dfs_dict[k] for k in dfs_dict if k.startswith(prefix)]
         merged_df = pd.concat(table_dfs, ignore_index=True)
 
-        rows_before = len(merged_df)
+        # Transform & clean
+        merged_df = transform_demo(merged_df) if table == "DEMO" else transform_generic(merged_df, table)
 
-        upper_prefix = prefix.upper()
-        if upper_prefix == "DEMO":
-            merged_df = transform_demo(merged_df)
-        elif upper_prefix == "DRUG":
-            merged_df = transform_drug(merged_df)
-        else:
-            merged_df = transform_generic(merged_df, upper_prefix)
-
-        rows_after = len(merged_df)
-        rows_dropped = rows_before - rows_after
-
-        logging.info(
-            f"{upper_prefix} → before: {rows_before}, after: {rows_after}, dropped: {rows_dropped}"
-        )
-
-        out_file = output_dir / f"merged_{prefix.lower()}.csv"
+        # Save CSV
+        out_file = output_dir / f"merged_{table.lower()}.csv"
         merged_df.to_csv(out_file, index=False)
-        logging.info(f"{upper_prefix} staged → {len(merged_df)} rows")
+
+        # Logging
+        before_rows = sum(len(df) for df in table_dfs)
+        after_rows = len(merged_df)
+        dropped = before_rows - after_rows
+        logging.info(f"{table} → before: {before_rows}, after: {after_rows}, dropped: {dropped}")
+        logging.info(f"{table} staged → {after_rows} rows")
 
     logging.info("All tables merged & transformed successfully.")
