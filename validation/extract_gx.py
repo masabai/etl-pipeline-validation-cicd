@@ -1,22 +1,18 @@
+# validation/extract_gx.py
+
 import logging
 from pathlib import Path
 import pandas as pd
 import json
-import great_expectations as gx
-from great_expectations.expectations import *
 
-# Paths (Codespaces + GitHub Actions)
+# ---------------- Paths ----------------
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
 GX_OUTPUT_DIR = PROJECT_ROOT / "data" / "validation"
 GX_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-"""
-Validates FDA FAERS raw TXT files using Great Expectations.
-Applies volume, schema, key integrity, and domain checks.
-"""
 
-# Expected FAERS schemas (stable join keys)
+# ---------------- FDA FAERS Contracts ----------------
+
 FAERS_SCHEMAS = {
     "DEMO": ["primaryid", "caseid", "caseversion", "i_f_code", "event_dt",
              "age", "age_cod", "sex", "wt", "reporter_country", "row_num"],
@@ -29,7 +25,6 @@ FAERS_SCHEMAS = {
     "INDI": ["primaryid", "indi_seq", "indi_name", "row_num"],
 }
 
-# Historical FAERS row count contracts
 FAERS_ROW_COUNTS = {
     "DRUG": (3_000_000, 6_000_000),
     "REAC": (2_000_000, 5_000_000),
@@ -40,7 +35,15 @@ FAERS_ROW_COUNTS = {
     "INDI": (2_000_000, 2_500_000)
 }
 
+
+# ---------------- Functions ----------------
+
 def run_data_validation(df: pd.DataFrame, batch_name: str):
+    """Run GA validation for a single DataFrame batch."""
+    import great_expectations as gx
+    from great_expectations.expectations import *
+
+    # Initialize GX context **inside function**
     context = gx.get_context()
     context.variables.config.config_version = 3
     context.root_directory = str(GX_OUTPUT_DIR)
@@ -54,77 +57,41 @@ def run_data_validation(df: pd.DataFrame, batch_name: str):
 
     expected_columns = FAERS_SCHEMAS.get(batch_name, list(df.columns))
 
-    # ---------- VOLUME CONTRACT ----------
-
+    # Volume check
     min_rows, max_rows = FAERS_ROW_COUNTS.get(batch_name, (10_000, 20_000_000))
-    suite.add_expectation(
-        ExpectTableRowCountToBeBetween(
-            min_value=min_rows,
-            max_value=max_rows
-        )
-    )
+    suite.add_expectation(ExpectTableRowCountToBeBetween(min_value=min_rows, max_value=max_rows))
 
-    # ---------- SCHEMA DRIFT ----------
+    # Schema drift
+    suite.add_expectation(ExpectTableColumnsToMatchSet(column_set=expected_columns, exact_match=False))
 
-    suite.add_expectation(
-        ExpectTableColumnsToMatchSet(
-            column_set=expected_columns,
-            exact_match=False  # FDA may add columns
-        )
-    )
+    # Key integrity
+    suite.add_expectation(ExpectColumnValuesToNotBeNull(column="primaryid"))
+    suite.add_expectation(ExpectColumnValuesToBeUnique(column="row_num"))
 
-    # ---------- KEY INTEGRITY ----------
-
-    suite.add_expectation(
-        ExpectColumnValuesToNotBeNull(column="primaryid")
-    )
-
-    suite.add_expectation(
-        ExpectColumnValuesToBeUnique(column="row_num")
-    )
-
-    # ---------- DOMAIN RULES ----------
-
+    # Domain rules
     if "age" in df.columns:
-        suite.add_expectation(
-            ExpectColumnValuesToBeBetween(
-                column="age", min_value=0, max_value=130, mostly=0.98
-            )
-        )
-
+        suite.add_expectation(ExpectColumnValuesToBeBetween(column="age", min_value=0, max_value=130, mostly=0.98))
     if "sex" in df.columns:
-        suite.add_expectation(
-            ExpectColumnValuesToBeInSet(
-                column="sex", value_set=["M", "F", "UNK"]
-            )
-        )
-
+        suite.add_expectation(ExpectColumnValuesToBeInSet(column="sex", value_set=["M", "F", "UNK"]))
     if "role_cod" in df.columns:
-        suite.add_expectation(
-            ExpectColumnValuesToBeInSet(
-                column="role_cod", value_set=["PS", "SS", "C", "I"]
-            )
-        )
+        suite.add_expectation(ExpectColumnValuesToBeInSet(column="role_cod", value_set=["PS", "SS", "C", "I"]))
 
-    # ---------- RUN VALIDATION ----------
-
-    validation = gx.ValidationDefinition(
-        data=batch_def,
-        suite=suite,
-        name=f"validation_{batch_name}"
-    )
-
+    validation = gx.ValidationDefinition(data=batch_def, suite=suite, name=f"validation_{batch_name}")
     results = validation.run(batch_parameters={"dataframe": df})
+
     return results
 
 
-def validate_all_texts():
-    for file_path in RAW_DIR.glob("*.txt"):
-        table_name = file_path.stem.split("25")[0].upper()  # DEMO25Q1 → DEMO
+def validate_all_texts(processed_dir: Path):
+    """
+    Loop through processed CSVs, validate each, and save JSON results.
+    Safe for pipeline import: nothing runs at top-level.
+    """
+    for file_path in processed_dir.glob("merged_*.csv"):
+        table_name = file_path.stem.replace("merged_", "").upper()
         logging.info(f"Validating {table_name}")
 
-        df = pd.read_csv(file_path, sep="$", dtype=str)
-
+        df = pd.read_csv(file_path, dtype=str)
         results = run_data_validation(df, batch_name=table_name)
 
         output_file = GX_OUTPUT_DIR / f"gx_{table_name}.json"
