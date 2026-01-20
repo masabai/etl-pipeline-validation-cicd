@@ -42,7 +42,7 @@ jobs:
       - name: Run ETL pipeline for demo
         run: python -m etl.pipeline 
         env:
-          RUN_SNOWFLAKE_LOAD: 1  # Demo mode: skip Snowflake -> 0
+          RUN_SNOWFLAKE_LOAD: 1  # Demo mode: skip Snowflake ->0
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
           SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
