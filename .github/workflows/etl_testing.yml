@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ✅ Ensure tmp directories exist
+      # Ensure tmp directories exist
       - name: Prepare tmp directories
         run: |
           mkdir -p /tmp/data/processed
@@ -42,7 +42,7 @@ jobs:
       - name: Run ETL pipeline for demo
         run: python -m etl.pipeline 
         env:
-          RUN_SNOWFLAKE_LOAD: 1  # Demo mode: skip Snowflake
+          RUN_SNOWFLAKE_LOAD: 1  # Demo mode: skip Snowflake -> 0
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
           SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
@@ -52,7 +52,7 @@ jobs:
       - name: List processed CSVs
         run: ls -lh /tmp/data/processed/*.csv || echo "No processed files found"
 
-      # ✅ Artifact uploads: only if files exist
+      # Artifact uploads: only if files exist
       - name: Upload raw FAERS files
         if: success()
         run: |
