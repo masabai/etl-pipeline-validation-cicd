@@ -75,7 +75,7 @@ def validate_all_texts(processed_dir: Path):
             logging.info(f"Success: {table_name}")
 
         finally:
-            # FORCE PURGE
+            # FORCE PURGE"
             del df
             gc.collect()
             logging.info(f"RAM Freed for {table_name}")

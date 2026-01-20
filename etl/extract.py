@@ -92,8 +92,8 @@ FAERS_URLS = {
 }
 
 # --- FAERS tables ---
-FAERS_TABLES = ["DEMO25Q", "DRUG25Q", "REAC25Q",
-                "OUTC25Q", "RPSR25Q", "INDI25Q", "THER25Q"]
+FAERS_TABLES = ["DEMO25Q", "DRUG25Q", "REAC25Q"]#,
+                #"OUTC25Q", "RPSR25Q", "INDI25Q", "THER25Q"]
 
 
 def download_faers_data(raw_dir: Path):
