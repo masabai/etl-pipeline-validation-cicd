@@ -41,6 +41,7 @@ merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
 
 # ---------------- Gx ----------------
 validate_all_texts(PROCESSED_DIR)
+
 """
 
 # ---------------- Load (toggleable) ----------------
