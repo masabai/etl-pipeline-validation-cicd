@@ -4,15 +4,20 @@ import logging
 from pathlib import Path
 import pandas as pd
 import json
+import great_expectations as gx
+from great_expectations.expectations.expect_table_row_count_to_be_between import ExpectTableRowCountToBeBetween
+from great_expectations.expectations.expect_table_columns_to_match_set import ExpectTableColumnsToMatchSet
+from great_expectations.expectations.expect_column_values_to_not_be_null import ExpectColumnValuesToNotBeNull
+from great_expectations.expectations.expect_column_values_to_be_unique import ExpectColumnValuesToBeUnique
+from great_expectations.expectations.expect_column_values_to_be_between import ExpectColumnValuesToBeBetween
+from great_expectations.expectations.expect_column_values_to_be_in_set import ExpectColumnValuesToBeInSet
 
 # ---------------- Paths ----------------
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 GX_OUTPUT_DIR = PROJECT_ROOT / "data" / "validation"
 GX_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-
 # ---------------- FDA FAERS Contracts ----------------
-
 FAERS_SCHEMAS = {
     "DEMO": ["primaryid", "caseid", "caseversion", "i_f_code", "event_dt",
              "age", "age_cod", "sex", "wt", "reporter_country", "row_num"],
@@ -35,15 +40,10 @@ FAERS_ROW_COUNTS = {
     "INDI": (2_000_000, 2_500_000)
 }
 
-
 # ---------------- Functions ----------------
 
 def run_data_validation(df: pd.DataFrame, batch_name: str):
     """Run GA validation for a single DataFrame batch."""
-    import great_expectations as gx
-    from great_expectations.expectations import *
-
-    # Initialize GX context **inside function**
     context = gx.get_context()
     context.variables.config.config_version = 3
     context.root_directory = str(GX_OUTPUT_DIR)
