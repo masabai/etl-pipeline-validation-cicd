@@ -39,7 +39,7 @@ logging.info(f"Extract complete. Files: {[f.name for f in downloaded_files]}")
 dfs = load_txt_files(RAW_DIR)
 merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
 
-# ---------------- Gx ----------------
+# ----------------  Gx  ----------------
 validate_all_texts()
 
 # ---------------- Load (toggleable) ----------------
