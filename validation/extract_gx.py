@@ -6,6 +6,13 @@ import pandas as pd
 import great_expectations as gx
 from great_expectations import expectations as gxe
 
+
+BASE_DIR = Path.cwd()  # repo root
+RAW_DIR = BASE_DIR / "data" / "raw"
+RAW_DIR.mkdir(parents=True, exist_ok=True)
+GX_OUTPUT_DIR = RAW_DIR/"gx_reports"
+GX_OUTPUT_DIR
+
 # Initialize GX ONCE at top level
 context = gx.get_context()
 try:
