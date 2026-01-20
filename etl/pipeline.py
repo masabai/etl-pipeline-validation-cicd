@@ -41,6 +41,7 @@ merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
 
 # ---------------- Gx ----------------
 validate_all_texts(PROCESSED_DIR)
+"""
 
 # ---------------- Load (toggleable) ----------------
 if os.environ.get("RUN_SNOWFLAKE_LOAD") == "1":
@@ -72,5 +73,5 @@ if os.environ.get("RUN_SNOWFLAKE_LOAD") == "1":
         logging.info("Snowflake connection closed")
 else:
     logging.info("Snowflake load skipped (RUN_SNOWFLAKE_LOAD not set)")
-
+"""
 print("--- Full ETL pipeline complete ---")
