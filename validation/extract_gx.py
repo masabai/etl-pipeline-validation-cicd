@@ -45,8 +45,6 @@ def run_data_validation(df: pd.DataFrame, batch_name: str):
     context.variables.config.config_version = 3
     context.root_directory = str(GX_OUTPUT_DIR)
 
-
-
     datasource = context.data_sources.add_pandas(name="pandas_src")
     asset = datasource.add_dataframe_asset(name=batch_name)
     batch_def = asset.add_batch_definition_whole_dataframe(name=batch_name)
