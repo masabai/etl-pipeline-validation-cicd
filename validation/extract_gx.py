@@ -4,13 +4,8 @@ import logging
 from pathlib import Path
 import pandas as pd
 import json
-import great_expectations as gx
-from great_expectations.expectations.expect_table_row_count_to_be_between import ExpectTableRowCountToBeBetween
-from great_expectations.expectations.expect_table_columns_to_match_set import ExpectTableColumnsToMatchSet
-from great_expectations.expectations.expect_column_values_to_not_be_null import ExpectColumnValuesToNotBeNull
-from great_expectations.expectations.expect_column_values_to_be_unique import ExpectColumnValuesToBeUnique
-from great_expectations.expectations.expect_column_values_to_be_between import ExpectColumnValuesToBeBetween
-from great_expectations.expectations.expect_column_values_to_be_in_set import ExpectColumnValuesToBeInSet
+#import great_expectations as gx
+from great_expectations import expectations as gx
 
 # ---------------- Paths ----------------
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
