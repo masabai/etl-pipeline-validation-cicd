@@ -1,7 +1,7 @@
 from pathlib import Path
 import logging
 from etl.extract import download_faers_data
-# from validation.extract_gx import validate_all_texts
+from validation.extract_gx import validate_all_texts
 from etl.transform import load_txt_files, merge_and_transform_one_by_one
 from etl.load import load_csv_to_snowflake
 from db.snowflake_conn import get_snowflake_connection
@@ -40,7 +40,7 @@ dfs = load_txt_files(RAW_DIR)
 merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
 
 # ---------------- Gx ----------------
-# validate_all_texts(PROCESSED_DIR)
+validate_all_texts(PROCESSED_DIR)
 
 # ---------------- Load (toggleable) ----------------
 if os.environ.get("RUN_SNOWFLAKE_LOAD") == "1":
