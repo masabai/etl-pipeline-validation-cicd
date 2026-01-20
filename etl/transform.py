@@ -49,7 +49,7 @@ def transform_demo(df):
     df = df.copy()
     df["load_ts"] = datetime.now()
 
-    # DEMO-specific cleaning
+    # DEMO dataset - specific cleaning
     if "age" in df.columns:
         df["age"] = pd.to_numeric(df["age"], errors="coerce")
     if "wt" in df.columns:
