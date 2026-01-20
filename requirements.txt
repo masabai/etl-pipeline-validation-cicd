@@ -4,14 +4,14 @@ requests
 pyyaml
 
 # Snowflake
-snowflake-connector-python[pandas]>=3.1,<4.0
+# snowflake-connector-python[pandas]>=3.1,<4.0 # work in ga and codespace
+snowflake-connector-python[pandas,secure-local-storage]==4.2.0
 
 # Data quality
 great-expectations>=1.2,<1.4
 
 # dbt
-dbt-core==1.8.0
-dbt-postgres==1.8.0
+dbt-snowflake==1.11.1
 
 # Testing
 pytest>=8.0,<9.0
