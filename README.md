@@ -1,12 +1,20 @@
 
-GA test 1/16 run
+
 
 # ETL Pipeline Testing
 
 An ETL pipeline project focused on **testing and validation**, designed to mirror how data pipelines are structured and tested in real-world cloud environments.  
 This project showcases a **full A→Z cloud workflow**: extract FAERS data, transform, validate (Great Expectations), and optionally load to Snowflake — all automated via **CI/CD in GitHub Actions** and reproducible in **Codespaces**.
 
----
+Instead of saying "I wrote a script," use action verbs that highlight the scale:
+Engineered a high-volume ETL pipeline to ingest and transform 11.5 million rows of FDA (FAERS) data using Python and Snowflake.
+Optimized memory utilization by implementing a chunked data-loading strategy, allowing the processing of 3.8M+ row tables within 8GB RAM constraints.
+Architected a resilient cloud-to-cloud connection by troubleshooting and resolving complex OCSP/SSL certificate handshake issues between GitHub and Snowflake.
+
+Engineering for Scale
+Working with 11.5 million rows of FDA data presented real-world production challenges that required specific architectural solutions:
+Memory Management: To handle the 3.8M row DRUG table without crashing the environment, I implemented a chunked loading strategy in Pandas. This ensured the 8GB RAM limit was never exceeded while maintaining a high-throughput load to Snowflake.
+Security & Connectivity: I resolved intermittent SSL/OCSP certificate revocation errors by configuring the Snowflake driver for "fail-open" connectivity. This ensured a stable production path between the cloud-based development environment (Codespaces) and the data warehouse.-
 # ETL Pipeline Testing
 
 
