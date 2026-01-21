@@ -1,12 +1,18 @@
-/data/raw/
-/data/processed/
-/data/gx_reports/
+# === Project Data ===
 data/
-/temp/
+temp/
 logs/
 fda_dbt/
 
+# === Python Environment ===
 .venv/
-
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# === IDE & Local Tooling ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
