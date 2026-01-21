@@ -18,7 +18,6 @@ try:
 except Exception:
     datasource = context.data_sources.add_pandas(name="pandas_src")
 
-# ... (Keep your FAERS_SCHEMAS and FAERS_ROW_COUNTS here) ...
 # ---------------- FDA FAERS Contracts ----------------
 FAERS_SCHEMAS = {
     "DEMO": ["primaryid", "caseid", "caseversion", "i_f_code", "event_dt",
@@ -55,6 +54,7 @@ def validate_all_texts(processed_dir: Path):
             actual_row_count = sum(1 for line in f) - 1 
 
         # 2. SMART SAMPLE (Memory Safety)
+
         if actual_row_count > 100_000:
             df = pd.read_csv(file_path, nrows=100_000, low_memory=True)
         else:

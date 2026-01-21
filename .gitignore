@@ -1,6 +1,6 @@
 /data/raw/
 /data/processed/
-/data/validation/
+/data/gx_reports/
 /temp
 
 .venv/
