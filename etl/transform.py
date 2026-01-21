@@ -87,8 +87,6 @@ def transform_generic(df, table_name):
     df = clean_common_fields(df)
     return df
 
-
-# ------------------ Merge + Transform ------------------ #
 # ------------------ Memory-Safe Merge + Transform ------------------ #
 def merge_and_transform_one_by_one(raw_dir, output_dir):
     """Architected for high-scale data with zero RAM crashes."""

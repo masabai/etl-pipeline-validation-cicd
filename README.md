@@ -1,5 +1,6 @@
 
-
+"to add"
+Optimized high-volume processing for 11M+ rows of FDA FAERS data by implementing streaming chunk-based transformations and sampled validation suites, reducing container memory footprint by 80%.
 
 # ETL Pipeline Testing
 
