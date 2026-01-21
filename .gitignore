@@ -1,7 +1,8 @@
 /data/raw/
 /data/processed/
 /data/gx_reports/
-/temp
+/temp/
+/fda_dbt/
 
 .venv/
 

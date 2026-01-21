@@ -74,3 +74,13 @@ else:
     logging.info("Snowflake load skipped (RUN_SNOWFLAKE_LOAD not set)")
 
 print("--- Full ETL pipeline complete ---")
+
+"""
+import subprocess
+
+def run_dbt():
+    logging.info("Starting dbt transformations...")
+    # Runs dbt models and dbt tests (data build tool's internal tests)
+    subprocess.run(["dbt", "run"], check=True)
+    subprocess.run(["dbt", "test"], check=True)
+"""
