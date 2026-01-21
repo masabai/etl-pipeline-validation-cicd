@@ -2,7 +2,7 @@
 /data/processed/
 /data/gx_reports/
 /temp/
-/fda_dbt/
+/fda_dbt/*
 
 .venv/
 
