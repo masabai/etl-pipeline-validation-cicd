@@ -36,7 +36,7 @@ downloaded_files = download_faers_data(raw_dir=RAW_DIR)
 logging.info(f"Extract complete. Files: {[f.name for f in downloaded_files]}")
 
 # ---------------- Transform ----------------
-dfs = load_txt_files(RAW_DIR)
+#dfs = load_txt_files(RAW_DIR)
 merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
 
 # ---------------- Gx ----------------
