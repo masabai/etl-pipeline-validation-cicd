@@ -42,6 +42,7 @@ merge_and_transform_one_by_one(RAW_DIR, PROCESSED_DIR)
 # ---------------- Gx ----------------
 validate_all_texts(PROCESSED_DIR)
 
+"""
 # ---------------- Load (toggleable) ----------------
 if os.environ.get("RUN_SNOWFLAKE_LOAD") == "1":
     logging.info("Snowflake load enabled. Connecting...")
@@ -75,7 +76,7 @@ else:
 
 print("--- Full ETL pipeline complete ---")
 
-"""
+
 import subprocess
 
 def run_dbt():
