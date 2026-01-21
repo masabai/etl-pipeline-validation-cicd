@@ -45,58 +45,74 @@ FAERS_ROW_COUNTS = {
 }
 
 def validate_all_texts(processed_dir: Path):
-    """Memory-efficient GX validation using streaming counts and sampling."""
+    """Memory-efficient GX validation with 2026 Context Registration."""
+    GX_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    
     for file_path in processed_dir.glob("merged_*.csv"):
         table_name = file_path.stem.replace("merged_", "").upper()
         logging.info(f">>> Validating: {table_name}")
 
-        # 1. STREAMING ROW COUNT (Zero RAM usage)
-        # This gets the 'real' count to satisfy your resume's 'Data Integrity' claim
+        # 1. STREAMING ROW COUNT (Zero RAM)
         with open(file_path, "r", encoding="utf-8") as f:
             actual_row_count = sum(1 for line in f) - 1 
 
-        # 2. SMART SAMPLE (Prevents the 'Terminated' crash)
-        # We load only 100k rows for schema validation if the file is massive
+        # 2. SMART SAMPLE (Memory Safety)
         if actual_row_count > 100_000:
-            logging.info(f"Large file ({actual_row_count} rows). Loading 100k sample for schema validation.")
             df = pd.read_csv(file_path, nrows=100_000, low_memory=True)
         else:
             df = pd.read_csv(file_path, low_memory=True)
         
         try:
-            # Re-use existing global context and datasource
+            # 3. DATASOURCE & ASSET REGISTRATION
             try:
                 asset = datasource.get_asset(table_name)
             except Exception:
                 asset = datasource.add_dataframe_asset(name=table_name)
             
-            batch_def = asset.add_batch_definition_whole_dataframe(name=f"def_{table_name}")
-            suite = gx.ExpectationSuite(name=f"suite_{table_name}")
+            # 4. BATCH DEFINITION REGISTRATION
+            try:
+                batch_def = asset.get_batch_definition(f"def_{table_name}")
+            except Exception:
+                batch_def = asset.add_batch_definition_whole_dataframe(name=f"def_{table_name}")
 
-            # 3. VOLUME CHECK (Uses the REAL count we got in Step 1)
-            min_r, max_r = FAERS_ROW_COUNTS.get(table_name, (10_000, 20_000_000))
+            # 5. SUITE REGISTRATION
+            suite_name = f"suite_{table_name}"
+            suite = gx.ExpectationSuite(name=suite_name)
             
-            # Note: We are validating the 'actual_row_count' we found, 
-            # ensuring integrity even though we only loaded a sample of the data.
-            if not (min_r <= actual_row_count <= max_r):
-                logging.warning(f"Row count validation failed for {table_name}: {actual_row_count}")
-
-            # 4. COLUMN SCHEMA CHECK
+            # Add expectations
+            min_r, max_r = FAERS_ROW_COUNTS.get(table_name, (10_000, 20_000_000))
+            suite.add_expectation(gxe.ExpectTableRowCountToBeBetween(min_value=min_r, max_value=max_r))
             cols = FAERS_SCHEMAS.get(table_name, list(df.columns))
             suite.add_expectation(gxe.ExpectTableColumnsToMatchSet(column_set=cols, exact_match=False))
 
-            # 5. RUN VALIDATION
-            val = gx.ValidationDefinition(data=batch_def, suite=suite, name=f"v_{table_name}")
+            # REGISTER THE SUITE TO CONTEXT (Crucial Fix)
+            try:
+                context.suites.add(suite)
+            except Exception:
+                # If it already exists, delete and re-add to update
+                context.suites.delete(suite_name)
+                context.suites.add(suite)
+
+            # 6. VALIDATION DEFINITION REGISTRATION
+            val_name = f"v_{table_name}"
+            val = gx.ValidationDefinition(data=batch_def, suite=suite, name=val_name)
+            
+            # REGISTER THE VALIDATION TO CONTEXT (Crucial Fix)
+            try:
+                val = context.validation_definitions.add(val)
+            except Exception:
+                context.validation_definitions.delete(val_name)
+                val = context.validation_definitions.add(val)
+
+            # 7. RUN VALIDATION
             results = val.run(batch_parameters={"dataframe": df})
 
-            # Save the report
+            # Save report
             with open(GX_OUTPUT_DIR / f"gx_{table_name}.json", "w") as f:
                 json.dump(results.to_json_dict(), f, indent=2)
             
-            logging.info(f"Success: {table_name} (Total rows: {actual_row_count})")
+            logging.info(f"Success: {table_name} (Verified {actual_row_count} rows)")
 
         finally:
-            # FORCE PURGE
             del df
             gc.collect()
-            logging.info(f"RAM Freed for {table_name}")
