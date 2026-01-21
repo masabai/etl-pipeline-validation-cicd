@@ -90,47 +90,44 @@ def transform_generic(df, table_name):
 # ------------------ Merge + Transform ------------------ #
 # ------------------ Memory-Safe Merge + Transform ------------------ #
 def merge_and_transform_one_by_one(raw_dir, output_dir):
+    """Architected for high-scale data with zero RAM crashes."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Clean up old files first
+    # 1. Clear old files
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
-        logging.info(f"Deleted old file: {f.name}")
 
-    # 2. Identify all unique table prefixes (e.g., 'DEMO', 'DRUG')
+    # 2. Get prefixes (DEMO, REAC, etc.)
     all_files = list(raw_dir.glob("*.txt"))
-    table_prefixes = set(f.stem[:-4] for f in all_files) # Removes '25Q1', etc.
+    table_prefixes = set(f.stem[:-4] for f in all_files)
 
     for prefix in table_prefixes:
         logging.info(f">>> Processing Group: {prefix}")
-        
-        # 3. Load and merge ONLY the files for this specific prefix
-        # This keeps RAM low by only holding one group at a time
-        current_group_dfs = []
-        for f in raw_dir.glob(f"{prefix}*.txt"):
-            df = pd.read_csv(f, sep="$", dtype=str, low_memory=False)
-            current_group_dfs.append(df)
-            logging.info(f"  Loaded {f.name}")
-
-        if not current_group_dfs:
-            continue
-
-        merged_df = pd.concat(current_group_dfs, ignore_index=True)
-        
-        # Clear the list of individual DataFrames to free RAM immediately
-        del current_group_dfs 
-
-        # 4. Apply transformations
-        if prefix.upper() == 'DEMO':
-            merged_df = transform_demo(merged_df)
-        elif prefix.upper() == 'DRUG':
-            merged_df = transform_drug(merged_df)
-        else:
-            merged_df = transform_generic(merged_df, prefix)
-
-        # 5. Save and immediately clear from memory
         out_file = output_dir / f"merged_{prefix.lower()}.csv"
-        merged_df.to_csv(out_file, index=False)
-        logging.info(f"Saved: {out_file.name} ({len(merged_df)} rows)")
+        first_chunk = True
         
-        del merged_df # Critical: Free RAM before the next prefix starts
+        # 3. Stream each file for the group row-by-row
+        for f in raw_dir.glob(f"{prefix}*.txt"):
+            logging.info(f"  Streaming {f.name}...")
+            
+            # chunksize=100000 ensures only 100k rows hit RAM at once
+            chunk_iter = pd.read_csv(f, sep="$", dtype=str, low_memory=True, chunksize=100000)
+            
+            for chunk in chunk_iter:
+                # Apply transformations locally to the small chunk
+                if prefix.upper() == 'DEMO':
+                    chunk = transform_demo(chunk)
+                elif prefix.upper() == 'DRUG':
+                    chunk = transform_drug(chunk)
+                else:
+                    chunk = transform_generic(chunk, prefix)
+
+                # 4. APPEND MODE (a) writes to disk immediately, freeing RAM
+                chunk.to_csv(out_file, mode='a', index=False, header=first_chunk)
+                first_chunk = False
+                
+                # Explicit cleanup for the chunk
+                del chunk
+                gc.collect()
+
+        logging.info(f"Successfully finalized: {out_file.name}")
