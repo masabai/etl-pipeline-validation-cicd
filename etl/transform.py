@@ -88,32 +88,49 @@ def transform_generic(df, table_name):
 
 
 # ------------------ Merge + Transform ------------------ #
-def merge_and_transform_one_by_one(dfs_dict, output_dir):
+# ------------------ Memory-Safe Merge + Transform ------------------ #
+def merge_and_transform_one_by_one(raw_dir, output_dir):
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Remove old merged CSVs
+    # 1. Clean up old files first
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
         logging.info(f"Deleted old file: {f.name}")
 
-    # Determine table prefixes (before quarter, e.g., DEMO25Q1 -> DEMO)
-    table_prefixes = set(k[:-4] for k in dfs_dict.keys())  # remove last 5 chars: 25Q1/25Q2
+    # 2. Identify all unique table prefixes (e.g., 'DEMO', 'DRUG')
+    all_files = list(raw_dir.glob("*.txt"))
+    table_prefixes = set(f.stem[:-4] for f in all_files) # Removes '25Q1', etc.
 
     for prefix in table_prefixes:
-        # Merge all quarters for this table
-        table_dfs = [dfs_dict[k] for k in dfs_dict if k.startswith(prefix)]
-        merged_df = pd.concat(table_dfs, ignore_index=True)
+        logging.info(f">>> Processing Group: {prefix}")
+        
+        # 3. Load and merge ONLY the files for this specific prefix
+        # This keeps RAM low by only holding one group at a time
+        current_group_dfs = []
+        for f in raw_dir.glob(f"{prefix}*.txt"):
+            df = pd.read_csv(f, sep="$", dtype=str, low_memory=False)
+            current_group_dfs.append(df)
+            logging.info(f"  Loaded {f.name}")
 
-        rows_before = len(merged_df)
+        if not current_group_dfs:
+            continue
 
-        # Transform
+        merged_df = pd.concat(current_group_dfs, ignore_index=True)
+        
+        # Clear the list of individual DataFrames to free RAM immediately
+        del current_group_dfs 
+
+        # 4. Apply transformations
         if prefix.upper() == 'DEMO':
             merged_df = transform_demo(merged_df)
+        elif prefix.upper() == 'DRUG':
+            merged_df = transform_drug(merged_df)
         else:
             merged_df = transform_generic(merged_df, prefix)
 
+        # 5. Save and immediately clear from memory
         out_file = output_dir / f"merged_{prefix.lower()}.csv"
         merged_df.to_csv(out_file, index=False)
-        logging.info(f"Saved transformed table: {out_file} ({len(merged_df)} rows)")
-
-    logging.info("All tables merged & transformed successfully.")
+        logging.info(f"Saved: {out_file.name} ({len(merged_df)} rows)")
+        
+        del merged_df # Critical: Free RAM before the next prefix starts
