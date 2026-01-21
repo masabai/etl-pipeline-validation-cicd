@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 import logging
 from datetime import datetime
+import gc 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
