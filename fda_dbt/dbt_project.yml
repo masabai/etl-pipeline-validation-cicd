@@ -1,16 +1,11 @@
-
-# Name your project! Project names should contain only lowercase characters
-# and underscores. A good package name should reflect your organization's
-# name or the intended use of these models
+# Project configuration
 name: 'fda_dbt'
 version: '1.0.0'
 
-# This setting configures which "profile" dbt uses for this project.
+# The profile dbt will use for this project
 profile: 'fda_dbt'
 
-# These configurations specify where dbt should look for different types of files.
-# The `model-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
+# Paths for dbt to find different types of files
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -18,22 +13,25 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+# Directories to remove when running `dbt clean`
+clean-targets:
   - "target"
   - "dbt_packages"
 
-
-# Configuring models
-# Full documentation: https://docs.getdbt.com/docs/configuring-models
-
-# In this example config, we tell dbt to build all models in the example/
-# directory as views. These settings can be overridden in the individual model
-# files using the `{{ config(...) }}` macro.
+# Model configuration
 models:
   fda_dbt:
+    # Staging models: raw data transformations
     staging:
-      +schema: "STAGING"      # leave staging as-is
+      +schema: "STAGING"
       +materialized: view
+
+    # Clean models: validated and normalized tables
     clean:
-      +schema: "CLEAN"        # clean models go here
+      +schema: "CLEAN"
+      +materialized: table
+
+    # Marts: dimensional models, facts and dims
+    marts:
+      +schema: "MARTS"
       +materialized: table
