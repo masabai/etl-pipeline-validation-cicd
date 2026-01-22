@@ -2,7 +2,6 @@
 data/
 temp/
 logs/
-fda_dbt/
 
 # === Python Environment ===
 .venv/

@@ -1,48 +1,52 @@
-
-"to add"
-Optimized high-volume processing for 11M+ rows of FDA FAERS data by implementing streaming chunk-based transformations and sampled validation suites, reducing container memory footprint by 80%.
-
 # ETL Pipeline Testing
 
-An ETL pipeline project focused on **testing and validation**, designed to mirror how data pipelines are structured and tested in real-world cloud environments.  
-This project showcases a **full A→Z cloud workflow**: extract FAERS data, transform, validate (Great Expectations), and optionally load to Snowflake — all automated via **CI/CD in GitHub Actions** and reproducible in **Codespaces**.
-
-Instead of saying "I wrote a script," use action verbs that highlight the scale:
-Engineered a high-volume ETL pipeline to ingest and transform 11.5 million rows of FDA (FAERS) data using Python and Snowflake.
-Optimized memory utilization by implementing a chunked data-loading strategy, allowing the processing of 3.8M+ row tables within 8GB RAM constraints.
-Architected a resilient cloud-to-cloud connection by troubleshooting and resolving complex OCSP/SSL certificate handshake issues between GitHub and Snowflake.
-
-Engineering for Scale
-Working with 11.5 million rows of FDA data presented real-world production challenges that required specific architectural solutions:
-Memory Management: To handle the 3.8M row DRUG table without crashing the environment, I implemented a chunked loading strategy in Pandas. This ensured the 8GB RAM limit was never exceeded while maintaining a high-throughput load to Snowflake.
-Security & Connectivity: I resolved intermittent SSL/OCSP certificate revocation errors by configuring the Snowflake driver for "fail-open" connectivity. This ensured a stable production path between the cloud-based development environment (Codespaces) and the data warehouse.-
-# ETL Pipeline Testing
-
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new)
-
-
-> ⚠️ **Note:** This demo pipeline runs on the **dev branch** and will extract, transform, and optionally load data. Depending on your network and container spin-up, it may take several minutes to complete.
+A cloud-first ETL pipeline project focused on **testing, validation, and data modeling**, designed to mirror real-world workflows in modern cloud environments.  
+This pipeline extracts FDA FAERS datasets, transforms and validates them using **Python, dbt, and Great Expectations**, and optionally loads curated tables to Snowflake (not included for public safety).  
 
 ---
 
-## Features
+## Data Sources & Workflow
 
-- Unit, feature, integration, and performance tests for ETL
-- Automated validation using **Great Expectations**
-- CI/CD via **GitHub Actions**
-- Cloud-first design: no local setup required
-- Snowflake optional load for production testing
-- All scripts reproducible in **GitHub Codespaces**
+- **FDA FAERS**: Multiple quarterly TXT files merged and normalized in Python before warehouse ingestion. Validated upstream with **Great Expectations**, then modeled downstream in dbt.  
+
+
+### Workflow
+1. Extract → Transform → Validate → Load (optional, requires private credentials)  
+2. Automated testing: unit, feature, integration, and performance tests  
+3. CI/CD pipeline ensures reproducible, production-ready runs  
 
 ---
 
-## Quick Start
+## Engineering Highlights
 
-1. Click the **Demo button** above to open a Codespace.  
-2. The ETL pipeline will start automatically via `postCreateCommand` in `.devcontainer/devcontainer.json`.  
-3. Explore `data/raw` and `data/processed` folders for input/output files.  
-4. Optional: Run tests via:
+- **High-volume processing**: Engineered ETL to handle 11.5M+ FDA rows. Chunked loading ensures memory efficiency (8GB RAM).  
+- **Performance Benchmark**: Successfully ingested and validated 11.5M+ rows in ~18 minutes using chunked processing.  
+- **Security & Connectivity**: Pipeline designed to be cloud-ready without exposing any credentials.  
+- **Resilient Transformations**: Sampled validation suites reduce runtime while preserving integrity checks.  
+
+---
+
+## Testing & Validation
+
+- Automated data validation using **Great Expectations**  
+- dbt tests, including unique combinations, not null, and accepted values  
+- **Example dbt validation:** `clean_fda_demo` flagged 131 duplicate `primaryid + caseversion` combinations out of 11.5M rows, demonstrating that the tests correctly identify data integrity issues.  
+- Pytest for pipeline unit and integration tests  
+- CI/CD ensures all tests run automatically on commit
+
+> Note: For demo purposes, nulls in staging tables are preserved. In production, these would be handled according to business rules.
+
+
+## Screenshots
+
+> ![Pipeline Running](screenshots/pipeline_run.png)  
+> ![dbt Tests Passing](screenshots/dbt_tests.png)  
+
+- Screenshots show pipeline execution, data transformations, and tests passing.  
+- No credentials or cloud access required to view results.  
+
+---
+
 
 ```bash
 pytest tests/
