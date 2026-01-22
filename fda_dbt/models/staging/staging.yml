@@ -1,0 +1,83 @@
+version: 2
+
+sources:
+  - name: fda
+    database: ETL_TESTING
+    schema: FDA
+    description: "Raw FDA FAERS data from Snowflake"
+    tables:
+      - name: demo
+        description: "FDA FAERS demographic (DEMO) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: caseversion
+            tests: [not_null]
+          - name: sex
+          - name: age
+          - name: reporter_country
+          - name: occr_country
+
+      - name: drug
+        description: "FDA FAERS drug (DRUG) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: drug_seq
+            tests: [not_null]
+          - name: role_cod
+          - name: drugname
+          - name: prod_ai
+
+      - name: indi
+        description: "FDA FAERS indication (INDI) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: indi_drug_seq
+            tests: [not_null]
+          - name: indi_pt
+
+      - name: outc
+        description: "FDA FAERS outcome (OUTC) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: outc_cod
+            tests: [not_null]
+
+      - name: reac
+        description: "FDA FAERS reaction (REAC) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: pt
+            tests: [not_null]
+
+      - name: ther
+        description: "FDA FAERS therapy (THER) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: drug_rec_act
+
+      - name: rpsr
+        description: "FDA FAERS reporter (RPSR) staging table"
+        columns:
+          - name: primaryid
+            tests: [not_null]
+          - name: caseid
+            tests: [not_null]
+          - name: rpsr_cod

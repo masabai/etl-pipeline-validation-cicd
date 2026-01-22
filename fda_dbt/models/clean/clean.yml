@@ -1,0 +1,110 @@
+version: 2
+
+models:
+  - name: clean_fda_demo
+    description: "Cleaned FDA demo table"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - primaryid
+            - caseversion
+
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+      - name: caseid
+        tests:
+          - not_null
+      - name: caseversion
+        tests:
+          - not_null
+      - name: sex
+        description: "Sex of the patient"
+        tests:
+          - accepted_values:
+              values: ['M', 'F', 'UNK']
+      - name: age
+        description: "Age of the patient"
+      - name: reporter_country
+        description: "Reporter country"
+      - name: occr_country
+        description: "Occurrence country"
+
+  - name: clean_fda_drug
+    description: "Cleaned FDA drug table"
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+          - relationships:
+              to: ref('clean_fda_demo')
+              field: primaryid
+      - name: caseid
+        tests:
+          - not_null
+      - name: drug_seq
+        tests:
+          - not_null
+      - name: role_cod
+        description: "Role code of the drug"
+      - name: drugname
+      - name: prod_ai
+
+  - name: clean_fda_indi
+    description: "Cleaned FDA indication table"
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+      - name: caseid
+        tests:
+          - not_null
+      - name: indi_drug_seq
+        tests:
+          - not_null
+      - name: indi_pt
+
+  - name: clean_fda_outc
+    description: "Cleaned FDA outcome table"
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+      - name: caseid
+        tests:
+          - not_null
+      - name: outc_cod
+
+  - name: clean_fda_reac
+    description: "Cleaned FDA reaction table"
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+      - name: caseid
+        tests:
+          - not_null
+      - name: pt
+
+  - name: clean_fda_ther
+    description: "Cleaned FDA therapy table"
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+      - name: caseid
+        tests:
+          - not_null
+      - name: drug_rec_act
+
+  - name: clean_fda_rpsr
+    description: "Cleaned FDA reporter table"
+    columns:
+      - name: primaryid
+        tests:
+          - not_null
+      - name: caseid
+        tests:
+          - not_null
+      - name: rpsr_cod

@@ -36,12 +36,13 @@ downloaded_files = download_faers_data(raw_dir=RAW_DIR)
 logging.info(f"Extract complete. Files: {[f.name for f in downloaded_files]}")
 
 # ---------------- Transform ----------------
-dfs = load_txt_files(RAW_DIR)
-merge_and_transform_one_by_one(dfs, PROCESSED_DIR)
+#dfs = load_txt_files(RAW_DIR)
+merge_and_transform_one_by_one(RAW_DIR, PROCESSED_DIR) 
 
-# ----------------  Gx  ----------------
-validate_all_texts()
+# ---------------- Gx ----------------
+validate_all_texts(PROCESSED_DIR)
 
+"""
 # ---------------- Load (toggleable) ----------------
 if os.environ.get("RUN_SNOWFLAKE_LOAD") == "1":
     logging.info("Snowflake load enabled. Connecting...")
@@ -74,3 +75,13 @@ else:
     logging.info("Snowflake load skipped (RUN_SNOWFLAKE_LOAD not set)")
 
 print("--- Full ETL pipeline complete ---")
+
+
+import subprocess
+
+def run_dbt():
+    logging.info("Starting dbt transformations...")
+    # Runs dbt models and dbt tests (data build tool's internal tests)
+    subprocess.run(["dbt", "run"], check=True)
+    subprocess.run(["dbt", "test"], check=True)
+"""

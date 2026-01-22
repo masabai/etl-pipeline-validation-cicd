@@ -1,8 +1,17 @@
-/data/raw/
-/data/processed/
-/temp
+# === Project Data ===
+data/
+temp/
+logs/
 
+# === Python Environment ===
 .venv/
-
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# === IDE & Local Tooling ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

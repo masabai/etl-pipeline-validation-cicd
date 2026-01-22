@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 import logging
 from datetime import datetime
+import gc 
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -86,34 +87,46 @@ def transform_generic(df, table_name):
     df = clean_common_fields(df)
     return df
 
-
-# ------------------ Merge + Transform ------------------ #
-def merge_and_transform_one_by_one(dfs_dict, output_dir):
+# ------------------ Memory-Safe Merge + Transform ------------------ #
+def merge_and_transform_one_by_one(raw_dir, output_dir):
+    """Architected for high-scale data with zero RAM crashes."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Remove old merged CSVs
+    # 1. Clear old files
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
-        logging.info(f"Deleted old file: {f.name}")
 
-    # Determine table prefixes (before quarter, e.g., DEMO25Q1 -> DEMO)
-    table_prefixes = set(k[:-4] for k in dfs_dict.keys())  # remove last 5 chars: 25Q1/25Q2
+    # 2. Get prefixes (DEMO, REAC, etc.)
+    all_files = list(raw_dir.glob("*.txt"))
+    table_prefixes = set(f.stem[:-4] for f in all_files)
 
     for prefix in table_prefixes:
-        # Merge all quarters for this table
-        table_dfs = [dfs_dict[k] for k in dfs_dict if k.startswith(prefix)]
-        merged_df = pd.concat(table_dfs, ignore_index=True)
-
-        rows_before = len(merged_df)
-
-        # Transform
-        if prefix.upper() == 'DEMO':
-            merged_df = transform_demo(merged_df)
-        else:
-            merged_df = transform_generic(merged_df, prefix)
-
+        logging.info(f">>> Processing Group: {prefix}")
         out_file = output_dir / f"merged_{prefix.lower()}.csv"
-        merged_df.to_csv(out_file, index=False)
-        logging.info(f"Saved transformed table: {out_file} ({len(merged_df)} rows)")
+        first_chunk = True
+        
+        # 3. Stream each file for the group row-by-row
+        for f in raw_dir.glob(f"{prefix}*.txt"):
+            logging.info(f"  Streaming {f.name}...")
+            
+            # chunksize=100000 ensures only 100k rows hit RAM at once
+            chunk_iter = pd.read_csv(f, sep="$", dtype=str, low_memory=True, chunksize=100000)
+            
+            for chunk in chunk_iter:
+                # Apply transformations locally to the small chunk
+                if prefix.upper() == 'DEMO':
+                    chunk = transform_demo(chunk)
+                elif prefix.upper() == 'DRUG':
+                    chunk = transform_drug(chunk)
+                else:
+                    chunk = transform_generic(chunk, prefix)
 
-    logging.info("All tables merged & transformed successfully.")
+                # 4. APPEND MODE (a) writes to disk immediately, freeing RAM
+                chunk.to_csv(out_file, mode='a', index=False, header=first_chunk)
+                first_chunk = False
+                
+                # Explicit cleanup for the chunk
+                del chunk
+                gc.collect()
+
+        logging.info(f"Successfully finalized: {out_file.name}")
