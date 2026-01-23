@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: dim_drug
+    description: "Conformed drug dimension deduplicated from clean_fda_drug"
+    columns:
+      - name: drug_sk
+        description: "Primary key (surrogate) for dim_drug"
+        tests:
+          - not_null
+      - name: drugname
+        description: "Standardized drug name"
+        tests:
+          - not_null # Ensures your logic handled the NULLs found in clean_fda_drug
+      - name: prod_ai
+        description: "Product Active Ingredient"
+        tests:
+          - dbt_expectations.expect_column_values_to_not_be_null:
+              severity: warn # Alert if new drugs enter without ingredients
+
+  - name: dim_reaction
+    description: "Unique list of patient reactions (MedDRA preferred terms)"
+    columns:
+      - name: reac_sk
+        tests:
+          - not_null
+      - name: pt # Preferred Term
+        tests:
+          - not_null
+
+  - name: dim_reporter
+    description: "Reporter information including occupation and country"
+    columns:
+      - name: rpsr_sk
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['1', '2', '3','4']
+
+      - name: rpsr_cod
+        description: "Reporter occupation code"
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['FGN', 'CSM', 'HP']
+
+  - name: dim_outcome
+    description: "Patient outcome dimension"
+    columns:
+      - name: outc_sk
+        tests:
+          - not_null
+      - name: outc_cod
+        tests:
+          - accepted_values:
+              values: ['DE', 'LT', 'HO', 'DS', 'CA', 'RI', 'OT']
