@@ -2,6 +2,22 @@ import snowflake.connector
 import os
 
 def get_snowflake_connection():
+    """
+    Establish a connection to the Snowflake data warehouse for ETL pipelines.
+
+    Connection details are pulled from environment variables:
+        - SNOW_USER
+        - SNOW_PASSWORD
+        - SNOW_ACCOUNT
+        - SNOW_WAREHOUSE
+
+    Returns:
+        snowflake.connector.SnowflakeConnection: Active Snowflake connection object.
+
+    Notes:
+        - Uses role 'ETL_PIPELINE' and connects to database 'ETL_TESTING', schema 'FDA'.
+        - insecure_mode=True is set to allow connections in Codespaces without full SSL verification.
+    """
     return snowflake.connector.connect(
         user=os.environ["SNOW_USER"],
         password=os.environ["SNOW_PASSWORD"],
@@ -10,16 +26,5 @@ def get_snowflake_connection():
         role="ETL_PIPELINE",
         database="ETL_TESTING",
         schema="FDA",
-        insecure_mode=True #allows the connection to proceed even if the security fail in Codespace
+        insecure_mode=True  # allows the connection to proceed even if the security check fails in Codespace
     )
-    
-    return snowflake.connector.connect(
-        user=user,
-        password=password,
-        account=account,
-        warehouse=warehouse,
-        role=role,
-        database=database,
-        schema=schema
-    )
-

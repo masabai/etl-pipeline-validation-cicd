@@ -8,6 +8,8 @@ models:
           combination_of_columns:
             - primaryid
             - caseversion
+          config:
+            severity: warn
 
     columns:
       - name: primaryid
