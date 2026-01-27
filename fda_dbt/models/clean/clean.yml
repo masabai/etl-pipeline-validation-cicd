@@ -25,7 +25,7 @@ models:
         description: "Sex of the patient"
         tests:
           - accepted_values:
-              values: ['M', 'F', 'UNK']
+              values: ['M', 'F', 'UNK', 'Unknown']
       - name: age
         description: "Age of the patient"
       - name: reporter_country

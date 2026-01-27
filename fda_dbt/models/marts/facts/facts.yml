@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: fact_adverse_events
+    description: >
+      Fact table combining patient demographics with drug, reaction, outcome,
+      and reporter surrogate keys derived from dimensional joins.
+
+    columns:
+      # --- Core grain ---
+      - name: patient_sk
+        tests:
+          - not_null
+
+      - name: primaryid
+        tests:
+          - not_null
+
+      - name: caseid
+        tests:
+          - not_null
+
+      - name: caseversion
+        tests:
+          - not_null
+
+      # --- Foreign keys (existence only, NOT uniqueness) ---
+      - name: drug_sk
+        tests:
+          - relationships:
+              to: ref('dim_drug')
+              field: drug_sk
+              config:
+                severity: warn
+
+      - name: reac_sk
+        tests:
+          - relationships:
+              to: ref('dim_reaction')
+              field: reac_sk
+              config:
+                severity: warn
+
+      - name: outc_sk
+        tests:
+          - relationships:
+              to: ref('dim_outcome')
+              field: outc_sk
+              config:
+                severity: warn
+
+      - name: rpsr_sk
+        tests:
+          - relationships:
+              to: ref('dim_reporter')
+              field: rpsr_sk
+              config:
+                severity: warn
