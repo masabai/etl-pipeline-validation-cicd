@@ -11,22 +11,36 @@ BASE_DIR = Path.cwd()  # repo root
 RAW_DIR = BASE_DIR / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-# FAERS ZIP URLs 
+# FAERS ZIP URLs
 FAERS_URLS = {
     "Q1_2025": "https://fis.fda.gov/content/Exports/FAERS_ASCII_2025Q1.zip",
     "Q2_2025": "https://fis.fda.gov/content/Exports/FAERS_ASCII_2025Q2.zip"
 }
 
-# FAERS tables 
+# FAERS tables
 FAERS_TABLES = ["DEMO25Q", "DRUG25Q", "REAC25Q",
                 "OUTC25Q", "RPSR25Q", "INDI25Q", "THER25Q"]
 
 
 def download_faers_data(raw_dir: Path):
     """
-    Download FAERS ZIPs for 2025 Q1 and Q2, extract all relevant tables,
-    and save as .txt files in raw_dir.
-    Retries up to 3 times on network errors.
+    Download and extract FAERS ZIP files for 2025 Q1 and Q2.
+
+    This function:
+    - Downloads FAERS ZIP archives from FDA servers.
+    - Extracts relevant tables listed in FAERS_TABLES.
+    - Saves extracted .txt files to `raw_dir`.
+    - Skips files that already exist.
+    - Retries up to 3 times on network errors.
+
+    Args:
+        raw_dir (Path): Directory where raw FAERS .txt files will be saved.
+
+    Returns:
+        list[Path]: Paths of downloaded or existing FAERS .txt files.
+
+    Raises:
+        requests.exceptions.RequestException: If all retries fail for a given quarter.
     """
     raw_dir.mkdir(parents=True, exist_ok=True)
 
@@ -77,4 +91,3 @@ def download_faers_data(raw_dir: Path):
                     raise
 
     return downloaded_files
-
