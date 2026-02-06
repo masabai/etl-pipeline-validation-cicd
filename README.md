@@ -40,11 +40,19 @@ A **Snowflake-native Streamlit dashboard** is included to show basic in-warehous
 ---
 
 ## Streamlit Dashboard
+A Snowflake-native Streamlit dashboard demonstrates interactive visualizations of FAERS data for 
+top antidepressants:
 
-- Provides basic visualization for patient distribution by age/sex and top reporting countries.  
-- Queries only use small, validated metrics to ensure performance.  
-- Designed as a lightweight demo of in-warehouse analysis.  
+Drugs included: SERTRALINE, FLUOXETINE, CITALOPRAM, ESCITALOPRAM, VENLAFAXINE, DULOXETINE, BUPROPION, 
+TRAZODONE, AMITRIPTYLINE
 
+Time period: 2025 Q1–Q2 (6 months of data)
+Highlights serious outcomes: Death (DE), Life-Threatening (LT), Hospitalization (HO), Disability (DS)
+Multi-tab, multi-color bar charts for clear, eye-catching distinction
+Raw data tables shown below charts for context and verification
+
+This lightweight demo showcases in-warehouse analytics using Snowflake’s Streamlit integration without
+heavy queries.
 ---
 
 ## Screenshots
@@ -61,3 +69,4 @@ A **Snowflake-native Streamlit dashboard** is included to show basic in-warehous
 
 ```bash
 pytest tests/
+

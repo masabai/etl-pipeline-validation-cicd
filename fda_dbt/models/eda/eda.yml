@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: marts
+    schema: MARTS  # your Snowflake schema
+    tables:
+      - name: dim_drug
+      - name: dim_outcome
