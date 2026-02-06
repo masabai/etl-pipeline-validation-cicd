@@ -1,14 +1,15 @@
-name: FDA ETL Pipeline   #test
+name: FDA ETL Pipeline  
 
 on:
+  workflow_dispatch:   
   push:
-    branches: ["main--"]
+    branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
       - "requirements.txt"
   pull_request:
-    branches: ["main--"]
+    branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
