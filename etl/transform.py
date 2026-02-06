@@ -1,3 +1,23 @@
+"""
+FAERS ETL: Load, Clean, and Transform ASCII TXT Files
+
+This script performs memory-efficient loading, cleaning, and transformation
+of FAERS raw ASCII TXT files. It supports table-specific transformations
+(DEMO, DRUG) and generic transformations for all other tables, while
+streaming large files in chunks to avoid memory overload.
+
+Features:
+- Loads all TXT files from a raw directory into Pandas DataFrames.
+- Applies common cleaning (deduplication, null handling, string normalization).
+- Applies table-specific transformations for DEMO and DRUG datasets.
+- Applies generic transformations for other tables.
+- Merges and outputs transformed CSVs to a specified output directory.
+- Streams large files in chunks for memory efficiency.
+- Adds load timestamps and ensures consistent column naming and types.
+
+Date: 2026-02-05
+"""
+
 import pandas as pd
 from pathlib import Path
 import logging
@@ -6,37 +26,19 @@ import gc
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-def load_txt_files(raw_dir):
-    """
-    Load all TXT files in a directory into Pandas DataFrames.
 
-    Args:
-        raw_dir: Directory containing raw TXT files.
-
-    Returns:
-        Mapping from file stem to loaded DataFrame.
-    """
+def load_txt_files(raw_dir: Path):
+    """Load all TXT files in a directory into Pandas DataFrames."""
     dfs = {}
     for txt_file in raw_dir.glob("*.txt"):
-        dfs[txt_file.stem] = pd.read_csv(
-            txt_file, sep="$", dtype=str, low_memory=False
-        )
+        dfs[txt_file.stem] = pd.read_csv(txt_file, sep="$", dtype=str, low_memory=False)
         logging.info(f"Loaded {txt_file.name} → {txt_file.stem}")
     return dfs
 
 
-def clean_common_fields(df):
-    """
-    Apply common cleaning steps to any FAERS DataFrame.
-
-    Args:
-        df: Input DataFrame.
-
-    Returns:
-        Cleaned DataFrame.
-    """
+def clean_common_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """Apply common cleaning to any FAERS DataFrame."""
     df = df.copy()
-
     df.columns = [c.lower().strip() for c in df.columns]
     df = df.drop_duplicates()
 
@@ -54,16 +56,8 @@ def clean_common_fields(df):
     return df
 
 
-def transform_demo(df):
-    """
-    Transform DEMO dataset with FAERS-specific cleaning.
-
-    Args:
-        df: Raw DEMO DataFrame.
-
-    Returns:
-        Transformed DataFrame.
-    """
+def transform_demo(df: pd.DataFrame) -> pd.DataFrame:
+    """Transform DEMO dataset with FAERS-specific cleaning."""
     df = df.copy()
     df["load_ts"] = datetime.now()
 
@@ -82,16 +76,8 @@ def transform_demo(df):
     return df
 
 
-def transform_drug(df):
-    """
-    Transform DRUG dataset with FAERS-specific cleaning.
-
-    Args:
-        df: Raw DRUG DataFrame.
-
-    Returns:
-        Transformed DataFrame.
-    """
+def transform_drug(df: pd.DataFrame) -> pd.DataFrame:
+    """Transform DRUG dataset with FAERS-specific cleaning."""
     df = df.copy()
     df["load_ts"] = datetime.now()
 
@@ -104,33 +90,24 @@ def transform_drug(df):
     return df
 
 
-def transform_generic(df, table_name):
-    """
-    Apply generic transformation for tables other than DEMO/DRUG.
-
-    Args:
-        df: Raw DataFrame.
-        table_name: Name of the table being transformed.
-
-    Returns:
-        Transformed DataFrame.
-    """
+def transform_generic(df: pd.DataFrame, table_name: str) -> pd.DataFrame:
+    """Apply generic transformation for tables other than DEMO/DRUG."""
     df = df.copy()
     df["load_ts"] = datetime.now()
     df = clean_common_fields(df)
     return df
 
 
-def merge_and_transform_one_by_one(raw_dir, output_dir):
+def merge_and_transform_one_by_one(raw_dir: Path, output_dir: Path):
     """
-    Merge and transform FAERS TXT files group by group in a memory-safe way.
+    Merge and transform FAERS TXT files in a memory-safe way.
 
-    Args:
-        raw_dir: Directory containing raw TXT files.
-        output_dir: Directory where merged CSVs will be saved.
+    Streams each table group in chunks, applies appropriate transformations,
+    and writes merged CSVs to output directory.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Remove old merged outputs
     for f in output_dir.glob("merged_*.csv"):
         f.unlink()
 
@@ -145,7 +122,7 @@ def merge_and_transform_one_by_one(raw_dir, output_dir):
         for f in raw_dir.glob(f"{prefix}*.txt"):
             logging.info(f"  Streaming {f.name}...")
 
-            chunk_iter = pd.read_csv(f, sep="$", dtype=str, low_memory=True, chunksize=100000)
+            chunk_iter = pd.read_csv(f, sep="$", dtype=str, low_memory=True, chunksize=100_000)
 
             for chunk in chunk_iter:
                 if prefix.upper() == 'DEMO':

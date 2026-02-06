@@ -1,3 +1,24 @@
+"""
+Snowflake Connection Helper for ETL Pipelines
+
+This module provides a single function to establish a Snowflake connection
+for ETL workflows, loading FAERS datasets, or running dbt transformations.
+
+Features:
+- Pulls connection credentials from environment variables:
+    - SNOW_USER
+    - SNOW_PASSWORD
+    - SNOW_ACCOUNT
+    - SNOW_WAREHOUSE
+- Connects to database 'ETL_TESTING', schema 'FDA', with role 'ETL_PIPELINE'.
+- Sets insecure_mode=True to allow connections in Codespaces without full SSL verification.
+
+Returns:
+    snowflake.connector.SnowflakeConnection: Active Snowflake connection object.
+
+Date: 2026-02-05
+"""
+
 import snowflake.connector
 import os
 

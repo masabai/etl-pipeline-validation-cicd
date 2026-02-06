@@ -1,3 +1,18 @@
+"""
+FDA ETL Pipeline Runner
+
+This script orchestrates the end-to-end FDA FAERS ETL workflow:
+- Extracts raw FAERS ZIP data from FDA servers
+- Transforms and merges raw tables into processed CSVs
+- Validates processed data using Great Expectations
+- Optionally loads processed CSVs into Snowflake
+- Executes local dbt transformations and tests
+
+Designed for reproducible local runs and CI/CD integration.
+
+Date: 2026-02-05
+"""
+
 from pathlib import Path
 import logging
 import warnings
@@ -13,7 +28,9 @@ from db.snowflake_conn import get_snowflake_connection
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 warnings.filterwarnings("ignore")
 
-# Set up directories
+# ----------------------------------------
+# Setup directories
+# ----------------------------------------
 BASE_DIR = Path.cwd()
 RAW_DIR = BASE_DIR / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -31,11 +48,11 @@ TESTS_DIR.mkdir(parents=True, exist_ok=True)
 def main():
     """
     Execute the full FDA ETL pipeline:
-    - Extract FAERS raw data
-    - Transform and merge into processed CSVs
-    - Validate using Great Expectations
-    - Optionally load into Snowflake
-    - Run local dbt transformations and tests
+    1. Extract raw FAERS data
+    2. Transform and merge into processed CSVs
+    3. Validate processed data via Great Expectations
+    4. Optionally load into Snowflake
+    5. Run local dbt transformations and tests
     """
     # ---------------- Extract ---------------- #
     downloaded_files = download_faers_data(raw_dir=RAW_DIR)
@@ -82,14 +99,14 @@ def main():
 
 def run_dbt_local():
     """
-    Run local dbt project including dependencies, transformations, and tests.
-    Uses full path to dbt executable inside virtual environment.
+    Run the local dbt project including dependencies, transformations, and tests.
+
+    Uses the dbt executable inside the virtual environment.
     """
-    # Dynamically find the project and venv paths
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     project_dir = os.path.join(base_dir, "fda_dbt")
 
-    # Path to the dbt executable inside Windows venv
+    # Path to dbt executable in Windows venv
     dbt_exe = os.path.join(base_dir, ".venv", "Scripts", "dbt.exe")
 
     if not os.path.exists(dbt_exe):
