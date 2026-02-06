@@ -4,8 +4,11 @@ FDA FAERS EDA Dashboard (Snowflake-native Streamlit)
 This script provides a lightweight demonstration of in-warehouse analytics for FDA FAERS datasets.
 It connects to the active Snowflake session using Snowpark, queries validated marts, and visualizes:
 
-1. Patient distribution by Age Group × Sex
-2. Top 10 Countries by report counts
+1. Reported Serious Outcomes for top antidepressants
+   - Death (DE)
+   - Life-Threatening (LT)
+   - Hospitalization (HO)
+   - Disability (DS)
 
 Key Features:
 - Snowflake-native: runs entirely within Snowflake using Snowpark session.
@@ -17,78 +20,210 @@ Date: 2026-02-05
 """
 
 import streamlit as st
-from snowflake.snowpark.context import get_active_session
+import pandas as pd
 import altair as alt
+from snowflake.snowpark.context import get_active_session
 
-# ---------------- Streamlit Page Configuration ----------------
-st.set_page_config(layout="wide", page_title="FDA FAERS EDA Dashboard")
-st.title("FDA FAERS: EDA Dashboard")
+# -------------------------------------------------
+# CONFIG
+# -------------------------------------------------
+st.set_page_config(
+    page_title="FAERS Antidepressant Serious Outcomes",
+    layout="wide"
+)
 
-# ---------------- Snowflake Session ----------------
-# Uses the active Snowflake session from Streamlit Snowpark
+st.title("Reported Serious Outcomes")
+st.subheader("Top Antidepressants – 2025 Q1/Q2 FAERS Reports")
+
+st.markdown(
+    "Only 6 months of FAERS data shown. "
+    '<span style="color:red; font-weight:bold;">'
+    "High death counts may reflect disease severity, age, and treatment context rather than drug causality."
+    '</span>',
+    unsafe_allow_html=True
+)
+
+# -------------------------------------------------
+# SNOWFLAKE SESSION
+# -------------------------------------------------
 session = get_active_session()
-DB_PATH = "ETL_TESTING.MARTS"  # Schema containing marts/validated fact tables
 
-# ---------------- Tabs for Each EDA ----------------
-tab_age_sex, tab_country = st.tabs(["Age × Sex", "Top Countries"])
+# -------------------------------------------------
+# SQL QUERY
+# -------------------------------------------------
+query = """
+SELECT
+    d.drugname,
+    o.outc_cod AS outcome_category,
+    COUNT(DISTINCT d.caseid) AS total_cases
+FROM marts.dim_drug d
+JOIN marts.dim_outcome o
+    ON d.caseid = o.caseid
+WHERE d.drugname IN (
+    'SERTRALINE', 'FLUOXETINE', 'CITALOPRAM', 'ESCITALOPRAM',
+    'VENLAFAXINE', 'DULOXETINE','BUPROPION', 'TRAZODONE','AMITRIPTYLINE'
+)
+AND o.outc_cod IN ('DE', 'LT', 'HO', 'DS')
+GROUP BY d.drugname, o.outc_cod
+ORDER BY d.drugname, total_cases DESC
+"""
 
-# -------- Tab 1: Age × Sex Distribution ----------
-with tab_age_sex:
-    # Query: count unique patients by broad age group and sex
-    query_age_sex = f"""
-    SELECT
-        CASE
-            WHEN age < 18 THEN 'Pediatric'
-            WHEN age >= 65 THEN 'Elderly'
-            ELSE 'Adult'
-        END AS age_group,
-        sex,
-        COUNT(DISTINCT caseid) AS num_patients
-    FROM {DB_PATH}.FACT_ADVERSE_EVENTS
-    WHERE age IS NOT NULL
-    GROUP BY age_group, sex
-    ORDER BY age_group, num_patients DESC
-    """
-    df_age_sex = session.sql(query_age_sex).to_pandas()
-    df_age_sex.columns = [c.upper() for c in df_age_sex.columns]
+df = session.sql(query).to_pandas()
+df.columns = [c.lower() for c in df.columns]
 
-    # Pivot data for multi-color bar chart
-    chart_data = df_age_sex.pivot(index='AGE_GROUP', columns='SEX', values='NUM_PATIENTS').fillna(0)
+# -------------------------------------------------
+# CLEAN LABELS
+# -------------------------------------------------
+outcome_labels = {
+    "DE": "Death",
+    "LT": "Life-Threatening",
+    "HO": "Hospitalization",
+    "DS": "Disability"
+}
+df["outcome_category"] = df["outcome_category"].map(outcome_labels)
 
-    # Display bar chart first
-    st.subheader("Patient Distribution by Age Group and Sex")
-    st.bar_chart(chart_data)
+# -------------------------------------------------
+# CREATE TABS
+# -------------------------------------------------
+tab_all, tab_de, tab_lt, tab_hos, tab_ds = st.tabs([
+    "All Outcomes",
+    "Death Only",
+    "Life-Threatening Only",
+    "Hospitalization Only",
+    "Disability Only"])
 
-    # Display raw table below for verification
-    st.subheader("Patient Counts Table")
-    st.dataframe(df_age_sex, use_container_width=True, hide_index=True)
+# -----------------------------
+# TAB 1: All Outcomes (Main)
+# -----------------------------
+with tab_all:
+    chart_all = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x=alt.X("drugname:N", title="Antidepressant"),
+            y=alt.Y("total_cases:Q", title="Total Cases"),
+            color=alt.Color(
+                "outcome_category:N",
+                title="Outcome",
+                scale=alt.Scale(scheme="tableau10")
+            ),
+            tooltip=["drugname", "outcome_category", "total_cases"]
+        )
+        .properties(height=450)
+    )
+    st.altair_chart(chart_all, use_container_width=True)
+    st.subheader("Patient Counts Table (All Outcomes)")
+    st.dataframe(df, use_container_width=True, hide_index=True)
 
-# -------- Tab 2: Top 10 Countries by Report Count ----------
-with tab_country:
-    # Query: count unique reports per reporting country
-    query_country = f"""
-    SELECT occr_country, COUNT(DISTINCT caseid) AS num_reports
-    FROM {DB_PATH}.FACT_ADVERSE_EVENTS
-    WHERE occr_country IS NOT NULL
-    GROUP BY occr_country
-    ORDER BY num_reports DESC
-    LIMIT 10
-    """
-    df_country = session.sql(query_country).to_pandas()
-    df_country.columns = [c.upper() for c in df_country.columns]
+# -----------------------------
+# TAB 2: Death Only
+# -----------------------------
+with tab_de:
+    df_de = df[df["outcome_category"] == "Death"]
+    chart_de = (
+        alt.Chart(df_de)
+        .mark_bar()
+        .encode(
+            x=alt.X("drugname:N", title="Antidepressant"),
+            y=alt.Y("total_cases:Q", title="Total Cases"),
+            color=alt.Color(
+                "drugname:N",
+                title="Antidepressant",
+                scale=alt.Scale(scheme="tableau10")
+            ),
+            tooltip=["drugname", "total_cases"]
+        )
+        .properties(height=450)
+    )
+    st.altair_chart(chart_de, use_container_width=True)
+    st.subheader("Patient Counts Table (Death)")
+    st.dataframe(df_de, use_container_width=True, hide_index=True)
 
-    st.subheader("Top 10 Countries by Report Count")
+# -----------------------------
+# TAB 3: Life-Threatening Only
+# -----------------------------
+with tab_lt:
+    df_lt = df[df["outcome_category"] == "Life-Threatening"]
+    chart_lt = (
+        alt.Chart(df_lt)
+        .mark_bar()
+        .encode(
+            x=alt.X("drugname:N", title="Antidepressant"),
+            y=alt.Y("total_cases:Q", title="Total Cases"),
+            color=alt.Color(
+                "drugname:N",
+                title="Antidepressant",
+                scale=alt.Scale(scheme="tableau10")
+            ),
+            tooltip=["drugname", "total_cases"]
+        )
+        .properties(height=450)
+    )
+    st.altair_chart(chart_lt, use_container_width=True)
+    st.subheader("Patient Counts Table (Life-Threatening)")
+    st.dataframe(df_lt, use_container_width=True, hide_index=True)
 
-    # Multi-color bar chart using Altair
-    chart = alt.Chart(df_country).mark_bar().encode(
-        x=alt.X('NUM_REPORTS', title='Number of Reports'),
-        y=alt.Y('OCCR_COUNTRY', sort='-x', title='Country'),
-        color='OCCR_COUNTRY',  # multi-color by country
-        tooltip=['OCCR_COUNTRY', 'NUM_REPORTS']
-    ).properties(height=400)
+# -----------------------------
+# TAB 4: Hospitalization Only
+# -----------------------------
+with tab_hos:
+    df_hos = df[df["outcome_category"] == "Hospitalization"]
+    chart_hos = (
+        alt.Chart(df_hos)
+        .mark_bar()
+        .encode(
+            x=alt.X("drugname:N", title="Antidepressant"),
+            y=alt.Y("total_cases:Q", title="Total Cases"),
+            color=alt.Color(
+                "drugname:N",
+                title="Antidepressant",
+                scale=alt.Scale(scheme="tableau10")
+            ),
+            tooltip=["drugname", "total_cases"]
+        )
+        .properties(height=450)
+    )
+    st.altair_chart(chart_hos, use_container_width=True)
+    st.subheader("Patient Counts Table (Hospitalization)")
+    st.dataframe(df_hos, use_container_width=True, hide_index=True)
 
-    st.altair_chart(chart, use_container_width=True)
+# -----------------------------
+# TAB 5: Disability Only
+# -----------------------------
+with tab_ds:
+    df_ds = df[df["outcome_category"] == "Disability"]
+    chart_ds = (
+        alt.Chart(df_ds)
+        .mark_bar()
+        .encode(
+            x=alt.X("drugname:N", title="Antidepressant"),
+            y=alt.Y("total_cases:Q", title="Total Cases"),
+            color=alt.Color(
+                "drugname:N",
+                title="Antidepressant",
+                scale=alt.Scale(scheme="tableau10")
+            ),
+            tooltip=["drugname", "total_cases"]
+        )
+        .properties(height=450)
+    )
+    st.altair_chart(chart_ds, use_container_width=True)
+    st.subheader("Patient Counts Table (Disability)")
+    st.dataframe(df_ds, use_container_width=True, hide_index=True)
 
-    # Display raw table below for verification
-    st.subheader("Raw Table")
-    st.dataframe(df_country, use_container_width=True, hide_index=True)
+# -----------------------------
+# DATA TABLE
+# -----------------------------
+with st.expander("View underlying data"):
+    st.dataframe(df, use_container_width=True)
+
+# -----------------------------
+# FOOTNOTE
+# -----------------------------
+st.markdown(
+    "Only 6 months of FAERS data shown. "
+    '<span style="color:red; font-weight:bold;">'
+    "High death counts may reflect disease severity, age, and treatment context rather than drug causality."
+    '</span>',
+    unsafe_allow_html=True
+)
