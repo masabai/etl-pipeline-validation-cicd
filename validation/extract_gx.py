@@ -1,3 +1,19 @@
+"""
+FAERS CSV Validation with Great Expectations
+
+This script validates processed FAERS CSV files using memory-efficient sampling
+and dynamic Great Expectations registration.
+
+Features:
+- Registers a Pandas datasource, assets, batches, and expectation suites dynamically.
+- Checks row count ranges and expected columns for each table.
+- Samples large CSVs to avoid memory overload.
+- Writes JSON validation reports to GX_OUTPUT_DIR.
+- Frees memory after each validation to prevent leaks.
+
+Date: 2026-02-05
+"""
+
 import logging
 import gc
 import json
@@ -6,20 +22,26 @@ import pandas as pd
 import great_expectations as gx
 from great_expectations import expectations as gxe
 
-# base directories
+# -----------------------
+# Base directories
+# -----------------------
 BASE_DIR = Path.cwd()  # repo root
-PROCESSED_DIR = BASE_DIR / "data"  # processed data storage
+PROCESSED_DIR = BASE_DIR / "data"  # processed CSV storage
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-GX_OUTPUT_DIR = PROCESSED_DIR / "gx_reports"  # great expectations report output
+GX_OUTPUT_DIR = PROCESSED_DIR / "gx_reports"  # GE JSON output directory
 
-# initialize great expectations context
+# -----------------------
+# Initialize GE context
+# -----------------------
 context = gx.get_context()
 try:
     datasource = context.data_sources.get("pandas_src")  # fetch existing datasource
 except Exception:
-    datasource = context.data_sources.add_pandas(name="pandas_src")  # create new pandas datasource
+    datasource = context.data_sources.add_pandas(name="pandas_src")  # create new Pandas datasource
 
-# faers expected table schemas
+# -----------------------
+# FAERS table expectations
+# -----------------------
 FAERS_SCHEMAS = {
     "DEMO": ["primaryid", "caseid", "caseversion", "i_f_code", "event_dt",
              "age", "age_cod", "sex", "wt", "reporter_country", "row_num"],
@@ -32,7 +54,6 @@ FAERS_SCHEMAS = {
     "INDI": ["primaryid", "indi_seq", "indi_name", "row_num"],
 }
 
-# faers expected row count ranges
 FAERS_ROW_COUNTS = {
     "DRUG": (3_000_000, 6_000_000),
     "REAC": (2_000_000, 5_000_000),
@@ -46,12 +67,18 @@ FAERS_ROW_COUNTS = {
 
 def validate_all_texts(processed_dir: Path):
     """
-    validate all merged faers csv files in `processed_dir` using great expectations
+    Validate all merged FAERS CSV files in `processed_dir` using Great Expectations.
 
-    - performs memory-efficient row counting (streaming)
-    - samples large csvs for validation to prevent memory overload
-    - registers datasource, asset, batch, expectation suite, and validation definition dynamically
-    - runs validation and writes json reports to GX_OUTPUT_DIR
+    Workflow:
+    - Streams row count for large CSVs to avoid memory overload.
+    - Loads a sample (or full CSV if small) into Pandas.
+    - Dynamically registers datasource, asset, batch, expectation suite, and validation definition.
+    - Applies row count and column set expectations.
+    - Runs validation and writes JSON reports to GX_OUTPUT_DIR.
+    - Cleans up memory after each validation.
+
+    Args:
+        processed_dir (Path): Directory containing merged FAERS CSVs.
     """
     GX_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)  # ensure output directory exists
 
@@ -59,58 +86,69 @@ def validate_all_texts(processed_dir: Path):
         table_name = file_path.stem.replace("merged_", "").upper()
         logging.info(f">>> validating: {table_name}")
 
-        # streaming row count
+        # -----------------------
+        # Determine row count (streaming)
+        # -----------------------
         with open(file_path, "r", encoding="utf-8") as f:
-            actual_row_count = sum(1 for line in f) - 1  # subtract header
+            actual_row_count = sum(1 for line in f) - 1  # exclude header
 
-        # sample load to prevent memory overload
+        # -----------------------
+        # Load a sample or full CSV
+        # -----------------------
         if actual_row_count > 100_000:
             df = pd.read_csv(file_path, nrows=100_000, low_memory=True)
         else:
             df = pd.read_csv(file_path, low_memory=True)
 
         try:
-            # datasource and asset registration
+            # -----------------------
+            # Datasource and asset registration
+            # -----------------------
             try:
                 asset = datasource.get_asset(table_name)
             except Exception:
                 asset = datasource.add_dataframe_asset(name=table_name)
 
-            # batch definition registration
+            # -----------------------
+            # Batch registration
+            # -----------------------
             try:
                 batch_def = asset.get_batch_definition(f"def_{table_name}")
             except Exception:
                 batch_def = asset.add_batch_definition_whole_dataframe(name=f"def_{table_name}")
 
-            # suite registration
+            # -----------------------
+            # Expectation suite setup
+            # -----------------------
             suite_name = f"suite_{table_name}"
             suite = gx.ExpectationSuite(name=suite_name)
 
-            # add expectations
             min_r, max_r = FAERS_ROW_COUNTS.get(table_name, (10_000, 20_000_000))
             suite.add_expectation(gxe.ExpectTableRowCountToBeBetween(min_value=min_r, max_value=max_r))
+
             cols = FAERS_SCHEMAS.get(table_name, list(df.columns))
             suite.add_expectation(gxe.ExpectTableColumnsToMatchSet(column_set=cols, exact_match=False))
 
-            # register the suite to context (update if exists)
             try:
                 context.suites.add(suite)
             except Exception:
                 context.suites.delete(suite_name)
                 context.suites.add(suite)
 
-            # validation definition registration
+            # -----------------------
+            # Validation definition
+            # -----------------------
             val_name = f"v_{table_name}"
             val = gx.ValidationDefinition(data=batch_def, suite=suite, name=val_name)
-
-            # register the validation to context (update if exists)
             try:
                 val = context.validation_definitions.add(val)
             except Exception:
                 context.validation_definitions.delete(val_name)
                 val = context.validation_definitions.add(val)
 
-            # run validation and save results
+            # -----------------------
+            # Run validation
+            # -----------------------
             results = val.run(batch_parameters={"dataframe": df})
             with open(GX_OUTPUT_DIR / f"gx_{table_name}.json", "w") as f:
                 json.dump(results.to_json_dict(), f, indent=2)
@@ -118,5 +156,5 @@ def validate_all_texts(processed_dir: Path):
             logging.info(f"success: {table_name} (verified {actual_row_count} rows)")
 
         finally:
-            del df  # free memory
-            gc.collect()  # run garbage collection
+            del df
+            gc.collect()

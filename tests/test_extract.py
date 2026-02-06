@@ -1,9 +1,9 @@
 # test_extract.py
 import pytest
 from pathlib import Path
-import etl.extract
+import elt.extract
 
-@pytest.mark.parametrize("quarter,url", extract.FAERS_URLS.items())
+@pytest.mark.parametrize("quarter,url", etl.extract.FAERS_URLS.items())
 def test_faers_extract(quarter, url, tmp_path):
     """
     Simple test: call extract.download_faers_data() and check that all expected tables
