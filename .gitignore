@@ -1,7 +1,6 @@
 # === Project Data ===
 data/
 temp/
-tests/
 logs/
 
 # === Python Environment ===
@@ -20,6 +19,14 @@ Thumbs.db
 # ==== temp folder
 temp/
 # ==== dbt Credentials ====
-# Ignore the profiles file if it's ever placed in the root or a subfolder
-profiles.yml
+# === dbt Runtime Folders ===
+target/            # Compiled SQL and manifest files (regenerated every run)
+dbt_packages/      # External packages (installed via 'dbt deps')
+dbt_modules/       # Older name for dbt_packages
+logs/              # Log files from dbt runs
+target/
+dbt_packages/
+logs/
+
+# === dbt Credentials (IMPORTANT) === 
 .dbt/
