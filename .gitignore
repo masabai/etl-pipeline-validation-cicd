@@ -19,3 +19,7 @@ Thumbs.db
 
 # ==== temp folder
 temp/
+# ==== dbt Credentials ====
+# Ignore the profiles file if it's ever placed in the root or a subfolder
+profiles.yml
+.dbt/
