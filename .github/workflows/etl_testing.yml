@@ -1,15 +1,15 @@
-name: FDA ETL Pipeline   
+name: FDA ETL Pipeline  
 
 on:
   workflow_dispatch:   
   push:
-    branches: ["main--"]
+    branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
       - "requirements.txt"
   pull_request:
-    branches: ["main--"]
+    branches: ["dev"]
     paths:
       - "etl/**"
       - "db/**"
@@ -43,7 +43,8 @@ jobs:
       - name: Run ETL pipeline for demo
         run: python -m etl.pipeline 
         env:
-          RUN_SNOWFLAKE_LOAD: 0  # Demo mode: skip Snowflake ->0
+          RUN_SNOWFLAKE_LOAD: 0  # skip Snowflake Load -> 0
+          RUN_DBT: 1   # skip dbt -> 0
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
           SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
