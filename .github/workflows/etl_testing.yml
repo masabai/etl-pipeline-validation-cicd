@@ -18,7 +18,7 @@ on:
 jobs:
   etl-demo:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45  # extended for full ETL + dbt
 
     steps:
       - name: Checkout repository
@@ -33,6 +33,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install dbt-snowflake==1.10.2  # ensure dbt Snowflake adapter is installed
 
       # Ensure tmp directories exist
       - name: Prepare tmp directories
@@ -40,37 +41,42 @@ jobs:
           mkdir -p /tmp/data/processed
           mkdir -p /tmp/data/raw
 
-      - name: Run ETL pipeline for demo
-        run: python -m etl.pipeline 
+      # Create dynamic dbt profile
+      - name: Setup dbt profile
+        run: |
+          mkdir -p ~/.dbt
+          echo "${DBT_PROFILES_YML}" > ~/.dbt/profiles.yml
         env:
-          RUN_SNOWFLAKE_LOAD: 0  # skip Snowflake Load -> 0
-          RUN_DBT: 1   # skip dbt -> 0
+          DBT_PROFILES_YML: ${{ secrets.DBT_PROFILES_YML }}
+
+      # Run ETL pipeline
+      - name: Run ETL pipeline
+        run: python -m etl.pipeline
+        env:
+          RUN_SNOWFLAKE_LOAD: 0  # skip Snowflake load for now
+          RUN_DBT: 1              # enable dbt run
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
           SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
           SNOW_WAREHOUSE: ${{ secrets.SNOW_WAREHOUSE }}
-          TMPDIR: /tmp  # ETL writes to /tmp
+          TMPDIR: /tmp
 
+      # List processed CSVs
       - name: List processed CSVs
         run: ls -lh /tmp/data/processed/*.csv || echo "No processed files found"
 
-      # Artifact uploads: only if files exist
+      # Upload raw FAERS files
       - name: Upload raw FAERS files
         if: success()
-        run: |
-          if compgen -G "/tmp/data/raw/*.txt" > /dev/null; then
-            echo "Uploading raw FAERS files..."
-            gh workflow run actions/upload-artifact@v4 --name faers-txt --path /tmp/data/raw/*.txt
-          else
-            echo "No raw FAERS files to upload"
-          fi
+        uses: actions/upload-artifact@v4
+        with:
+          name: faers-txt
+          path: /tmp/data/raw/*.txt
 
+      # Upload merged CSVs
       - name: Upload merged CSVs
         if: success()
-        run: |
-          if compgen -G "/tmp/data/processed/*.csv" > /dev/null; then
-            echo "Uploading merged CSVs..."
-            gh workflow run actions/upload-artifact@v4 --name faers-processed --path /tmp/data/processed/*.csv
-          else
-            echo "No merged CSVs to upload"
-          fi
+        uses: actions/upload-artifact@v4
+        with:
+          name: faers-processed
+          path: /tmp/data/processed/*.csv

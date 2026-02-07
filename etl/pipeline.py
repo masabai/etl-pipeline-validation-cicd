@@ -129,24 +129,31 @@ def run_dbt_local():
 
 def run_dbt():
     """
-    Run dbt models and tests.
+    Run dbt dependencies, models, and tests.
     Controlled by environment variable RUN_DBT for CI/CD.
     """
     if os.environ.get("RUN_DBT") != "1":
         logging.info("DBT run skipped (RUN_DBT not set)")
         return
 
-    logging.info("Starting dbt transformations...")
     try:
+        # 1. ALWAYS install dependencies first
+        logging.info("Installing dbt dependencies...")
+        subprocess.run(["dbt", "deps"], check=True)
+
+        # 2. Run the models
+        logging.info("Starting dbt transformations...")
         subprocess.run(["dbt", "run"], check=True)
+
+        # 3. Run the tests
+        logging.info("Starting dbt tests...")
         subprocess.run(["dbt", "test"], check=True)
+        
         logging.info("DBT run and tests completed successfully.")
     except subprocess.CalledProcessError as e:
         logging.error(f"DBT execution failed: {e}")
         raise
 
 if __name__ == "__main__":
-    main()
-#    run_dbt_local()
     run_dbt()
     logging.info("--- Full ETL pipeline complete ---")
