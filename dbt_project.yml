@@ -20,20 +20,19 @@ clean-targets:
 
 # Model configuration
 models:
-  # We removed the 'fda_dbt:' nesting here because model-paths 
-  # already points dbt inside the subfolder.
-  staging:
-    +schema: "STAGING"
-    +materialized: view
+  fda_dbt:      # <--- YOU MUST HAVE THIS LINE FOR SCHEMAS TO WORK
+    staging:
+      +schema: "STAGING"
+      +materialized: view
 
-  clean:
-    +schema: "CLEAN"
-    +materialized: table
+    clean:
+      +schema: "CLEAN"
+      +materialized: table
 
-  marts:
-    +schema: "MARTS"
-    +materialized: table
+    marts:
+      +schema: "MARTS"
+      +materialized: table
 
-  eda:
-    +schema: "EDA"
-    +materialized: table
+    eda:
+      +schema: "EDA"
+      +materialized: table
