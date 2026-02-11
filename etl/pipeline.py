@@ -45,7 +45,7 @@ TESTS_DIR = BASE_DIR / "tests"
 TESTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def main():
+def run_etl():
     """
     Execute the full FDA ETL pipeline:
     1. Extract raw FAERS data
@@ -96,37 +96,6 @@ def main():
     else:
         logging.info("Snowflake load skipped (RUN_SNOWFLAKE_LOAD not set)")
 
-
-def run_dbt_local():
-    """
-    Run the local dbt project including dependencies, transformations, and tests.
-
-    Uses the dbt executable inside the virtual environment.
-    """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_dir = os.path.join(base_dir, "fda_dbt")
-
-    # Path to dbt executable in Windows venv
-    dbt_exe = os.path.join(base_dir, ".venv", "Scripts", "dbt.exe")
-
-    if not os.path.exists(dbt_exe):
-        logging.error(f"dbt executable not found at {dbt_exe}. Check your .venv path.")
-        return
-
-    logging.info(f"Using dbt executable: {dbt_exe}")
-    logging.info(f"Target dbt project: {project_dir}")
-
-    try:
-        # Install dependencies and run transformations/tests
-        subprocess.run([dbt_exe, "deps"], cwd=project_dir, check=True)
-        subprocess.run([dbt_exe, "run"], cwd=project_dir, check=True)
-        subprocess.run([dbt_exe, "test"], cwd=project_dir, check=True)
-
-        logging.info("Local dbt run and tests completed successfully.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"DBT execution failed: {e}")
-        raise
-
 def run_dbt():
     """
     Run dbt dependencies, models, and tests.
@@ -155,5 +124,6 @@ def run_dbt():
         raise
 
 if __name__ == "__main__":
+    run_etl()
     run_dbt()
     logging.info("--- Full ETL pipeline complete ---")

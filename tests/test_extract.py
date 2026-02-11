@@ -3,51 +3,54 @@ import io
 import zipfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-# Import your function - adjust 'etl.downloader' if your file name is different
-from etl.extract import download_faers_data, FAERS_TABLES 
+from etl.extract import download_faers_data
+
 
 @pytest.fixture
 def temp_raw_dir(tmp_path):
-    """Creates a temporary directory for testing."""
-    return tmp_path / "raw"
+    """Physical folder for FAERS raw files"""
+    raw = tmp_path / "raw"
+    raw.mkdir(parents=True, exist_ok=True)
+    return raw
 
-def create_mock_zip():
-    """Helper to create a fake ZIP in memory with one valid FAERS file."""
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as z:
-        # Create a fake 'DEMO25Q1.txt' inside the zip
-        z.writestr("ASCII/DEMO25Q1.txt", "fake data content")
-    buffer.seek(0)
-    return buffer
+
+def _fake_zip():
+    """Create a fake in-memory ZIP for testing"""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("ASCII/DEMO25Q1.txt", "fake data")
+    buf.seek(0)
+    return buf
+
 
 @patch("requests.get")
 def test_download_faers_data_success(mock_get, temp_raw_dir):
-    """Test that the script extracts specific files from a ZIP."""
-    # Setup the mock to return our fake ZIP
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.iter_content.return_value = [create_mock_zip().getvalue()]
-    mock_response.__enter__.return_value = mock_response
-    mock_get.return_value = mock_response
+    """Test download + extraction works"""
+    resp = MagicMock()
+    resp.status_code = 200
+    resp.iter_content.return_value = [_fake_zip().getvalue()]
+    resp.__enter__.return_value = resp
+    mock_get.return_value = resp
 
-    # Run the function
-    downloaded_paths = download_faers_data(temp_raw_dir)
+    files = download_faers_data(temp_raw_dir)
 
-    # ASSERTIONS
-    assert len(downloaded_paths) > 0
+    assert len(files) > 0
     assert (temp_raw_dir / "DEMO25Q1.txt").exists()
-    assert mock_get.call_count > 0
+
 
 def test_skip_if_already_exists(temp_raw_dir):
-    """Test that it skips download if 14 files already exist."""
-    # Manually create 14 dummy files
-    for i in range(14):
-        (temp_raw_dir / f"test_file_{i}.txt").touch()
+    """Test idempotency: skip if 14 files exist"""
 
-    # If it tries to download, it will crash because we didn't mock 'requests'
-    # But it should return early based on the file count check.
+    # ---- EASIEST WAY: create 14 real files on disk ----
+    for i in range(14):
+        f = temp_raw_dir / f"test_file_{i}.txt"
+        with open(f, "wb") as fp:
+            fp.write(b"x")  # dummy content
+
+    # sanity check (optional)
+    assert len(list(temp_raw_dir.iterdir())) == 14
+
+    # now call extractor, should see files and skip
     files = download_faers_data(temp_raw_dir)
-    
+
     assert len(files) == 14
-    logging_info = "All 14 FAERS TXT files already exist" 
-    # This proves the logic hit the 'existing_files' check

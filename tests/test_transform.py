@@ -2,7 +2,13 @@
 import pytest
 from pathlib import Path
 import pandas as pd
-import etl.transform
+#from etl import transform
+from etl.transform import (
+    load_txt_files,
+    transform_demo,
+    transform_drug,
+    merge_and_transform_one_by_one
+)
 
 
 @pytest.fixture
