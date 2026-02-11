@@ -124,6 +124,6 @@ def run_dbt():
         raise
 
 if __name__ == "__main__":
-    run_etl()
+    #run_etl()
     run_dbt()
     logging.info("--- Full ETL pipeline complete ---")
