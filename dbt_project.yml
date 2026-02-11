@@ -6,10 +6,10 @@ version: '1.0.0'
 profile: 'fda_dbt'
 
 # Paths for dbt to find different types of files
-#model-paths: ["fda_dbt/models"]
-macro-paths: ["macros", "fda_dbt/macros"]
+#model-paths: ["models"]
+macro-paths: ["macros"]
 analysis-paths: ["analyses"]
-test-paths: ["fda_dbt/tests"]
+test-paths: ["tests"]
 seed-paths: ["seeds"]
 #macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
