@@ -30,3 +30,7 @@ logs/
 
 # === dbt Credentials (IMPORTANT) === 
 .dbt/
+
+
+# ==== misc  ===
+misc_notes

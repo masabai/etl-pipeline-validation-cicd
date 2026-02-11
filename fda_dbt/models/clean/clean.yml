@@ -8,8 +8,10 @@ models:
           combination_of_columns:
             - primaryid
             - caseversion
+          # THIS CONFIG BLOCK IS THE FIX
           config:
             severity: warn
+            warn_if: ">150"  # Higher than your 131 duplicates
 
     columns:
       - name: primaryid

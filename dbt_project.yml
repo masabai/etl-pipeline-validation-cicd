@@ -7,11 +7,11 @@ profile: 'fda_dbt'
 
 # Paths for dbt to find different types of files
 model-paths: ["fda_dbt/models"]
-analysis-paths: ["analyses"]
+macro-paths: ["fda_dbt/macros"]
+analysis-paths: ["fda_dbt/analyses"]
 test-paths: ["fda_dbt/tests"]
-seed-paths: ["seeds"]
-macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
+seed-paths: ["fda_dbt/seeds"]
+snapshot-paths: ["fda_dbt/snapshots"]
 
 # Directories to remove when running `dbt clean`
 clean-targets:
@@ -20,23 +20,19 @@ clean-targets:
 
 # Model configuration
 models:
-  fda_dbt:
-    # Staging models: raw data transformations
+  fda_dbt:      # <--- YOU MUST HAVE THIS LINE FOR SCHEMAS TO WORK
     staging:
       +schema: "STAGING"
       +materialized: view
 
-    # Clean models: validated and normalized tables
     clean:
       +schema: "CLEAN"
       +materialized: table
 
-    # Marts: dimensional models, facts and dims
     marts:
       +schema: "MARTS"
       +materialized: table
 
-# Marts: dimensional models, facts and dims
     eda:
       +schema: "EDA"
       +materialized: table

@@ -53,7 +53,7 @@ jobs:
       - name: Run ETL pipeline
         run: python -m etl.pipeline
         env:
-          RUN_SNOWFLAKE_LOAD: 0  # skip Snowflake load for now
+          RUN_SNOWFLAKE_LOAD: 0  # skip Snowflake load for now->0
           RUN_DBT: 1              # enable dbt run
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
