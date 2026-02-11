@@ -6,15 +6,10 @@ version: '1.0.0'
 profile: 'fda_dbt'
 
 # Paths for dbt to find different types of files
-model-paths: ["models"]
-
-#model-paths: ["fda_dbt/models"]
-analysis-paths: ["analyses"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
-macro-paths: ["macros"]
-#macro-paths: ["fda_dbt/macros"]
-snapshot-paths: ["snapshots"]
+model-paths: ["fda_dbt/models"]
+macro-paths: ["fda_dbt/macros"]
+seed-paths: ["fda_dbt/seeds"]
+test-paths: ["fda_dbt/tests"]
 
 # Directories to remove when running `dbt clean`
 clean-targets:
