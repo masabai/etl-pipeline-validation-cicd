@@ -10,7 +10,8 @@ model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
 seed-paths: ["seeds"]
-macro-paths: ["macros"]
+# macro-paths: ["macros"]
+macro-paths: ["fda_dbt/macros"]
 snapshot-paths: ["snapshots"]
 
 # Directories to remove when running `dbt clean`
