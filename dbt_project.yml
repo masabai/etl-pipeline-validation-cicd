@@ -6,13 +6,12 @@ version: '1.0.0'
 profile: 'fda_dbt'
 
 # Paths for dbt to find different types of files
-#model-paths: ["models"]
-macro-paths: ["macros"]
-analysis-paths: ["analyses"]
-test-paths: ["tests"]
-seed-paths: ["seeds"]
-#macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
+model-paths: ["fda_dbt/models"]
+macro-paths: ["fda_dbt/macros"]
+analysis-paths: ["fda_dbt/analyses"]
+test-paths: ["fda_dbt/tests"]
+seed-paths: ["fda_dbt/seeds"]
+snapshot-paths: ["fda_dbt/snapshots"]
 
 # Directories to remove when running `dbt clean`
 clean-targets:
@@ -21,23 +20,20 @@ clean-targets:
 
 # Model configuration
 models:
-  fda_dbt:
-    # Staging models: raw data transformations
-    staging:
-      +schema: "STAGING"
-      +materialized: view
+  # We removed the 'fda_dbt:' nesting here because model-paths 
+  # already points dbt inside the subfolder.
+  staging:
+    +schema: "STAGING"
+    +materialized: view
 
-    # Clean models: validated and normalized tables
-    clean:
-      +schema: "CLEAN"
-      +materialized: table
+  clean:
+    +schema: "CLEAN"
+    +materialized: table
 
-    # Marts: dimensional models, facts and dims
-    marts:
-      +schema: "MARTS"
-      +materialized: table
+  marts:
+    +schema: "MARTS"
+    +materialized: table
 
-   # Marts: dimensional models, facts and dims
-    eda:
-      +schema: "EDA"
-      +materialized: table
+  eda:
+    +schema: "EDA"
+    +materialized: table
