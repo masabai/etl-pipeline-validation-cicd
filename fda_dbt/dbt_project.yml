@@ -6,7 +6,8 @@ version: '1.0.0'
 profile: 'fda_dbt'
 
 # Paths for dbt to find different types of files
-model-paths: ["models"]
+#model-paths: ["models"]
+model-paths: ["fda_dbt/models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
 seed-paths: ["seeds"]
