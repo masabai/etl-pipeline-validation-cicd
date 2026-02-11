@@ -37,7 +37,7 @@ models:
       +schema: "MARTS"
       +materialized: table
 
-# Marts: dimensional models, facts and dims
+   # Marts: dimensional models, facts and dims
     eda:
       +schema: "EDA"
       +materialized: table
