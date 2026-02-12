@@ -41,7 +41,7 @@ jobs:
           mkdir -p /tmp/data/processed
           mkdir -p /tmp/data/raw
 
-      # NEW STEP: Run unit tests before hitting Snowflake/dbt
+      # Run unit tests before hitting Snowflake/dbt
       - name: Run ETL Unit Tests
         run: |
           python -m pytest tests/test_extract.py tests/test_transform.py tests/test_load.py -v
