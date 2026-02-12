@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 from pathlib import Path
 from unittest.mock import MagicMock
-from etl import load  # your load.py module
+from etl import load  
 
 # ---------------- Fixture ----------------
 @pytest.fixture
