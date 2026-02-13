@@ -60,8 +60,8 @@ jobs:
       - name: Run ETL pipeline
         run: python -m etl.pipeline
         env:
-          RUN_SNOWFLAKE_LOAD: 0 # skip -> 0
-          RUN_DBT: 0              
+          RUN_SNOWFLAKE_LOAD: 0 # skip -> 0, RUN -> 1
+          RUN_DBT: 0   # skip -> 0, RUN -> 1           
           SNOW_USER: ${{ secrets.SNOW_USER }}
           SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
           SNOW_ACCOUNT: ${{ secrets.SNOW_ACCOUNT }}
