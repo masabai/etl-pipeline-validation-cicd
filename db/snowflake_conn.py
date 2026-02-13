@@ -11,7 +11,6 @@ Features:
     - SNOW_ACCOUNT
     - SNOW_WAREHOUSE
 - Connects to database 'ETL_TESTING', schema 'FDA', with role 'ETL_PIPELINE'.
-- Sets insecure_mode=True to allow connections in Codespaces without full SSL verification.
 
 Returns:
     snowflake.connector.SnowflakeConnection: Active Snowflake connection object.
