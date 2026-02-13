@@ -53,7 +53,8 @@ def load_csv_to_snowflake(csv_path, table: str, conn):
 
     for i, df in enumerate(df_iterator):
         df.columns = [col.upper() for col in df.columns]
-
+        
+        # Write DataFrame to Snowflake; ignore fourth return value (metadata) 
         success, nchunks, nrows, _ = write_pandas(
             conn=conn,
             df=df,
