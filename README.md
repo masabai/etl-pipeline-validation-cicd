@@ -41,7 +41,7 @@ graph LR
 ## Engineering Highlights
 
 - Processed **11.5M+ rows** from FAERS datasets using chunked loading to avoid memory issues.  
-- End-to-end workflow (extract → transform → validate → load → dbt models/tests) completed in ~14 minutes with **58 dbt models** and **24 tests**.  
+- End-to-end workflow (extract → transform → validate → load → dbt models/tests) completed in ~15 minutes with **23 dbt models** and **58 tests**.  
 - Pipeline runs securely without storing credentials in code.
 - Integrated Great Expectations to catch schema drifts before loading to Snowflake.
 
