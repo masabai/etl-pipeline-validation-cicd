@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: marts
-    schema: MARTS  # Source schema
+    schema: MARTS  
     tables:
       - name: dim_drug
       - name: dim_outcome
