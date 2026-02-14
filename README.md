@@ -1,7 +1,7 @@
 # ETL Pipeline Testing
 
-This project is a cloud-based ETL pipeline for **FDA FAERS datasets**.  
-It extracts quarterly raw TXT files, transforms and validates them using **Python, dbt, and Great Expectations**, and loads cleaned tables into Snowflake.  
+This project is a cloud-based ETL pipeline for **FDA FAERS datasets** , built in GitHub Codespaces and powered by Snowflake for high-performance warehousing.
+Instead of traditional cloud providers (AWS/Azure/GCP), this setup runs on the GitHub ecosystem to manage the full lifecycle: from code execution in a cloud container (Codespaces) to automated testing and deployment (GitHub Actions). It extracts quarterly raw TXT files, transforms and validates them using **Python, dbt, and Great Expectations**, and loads cleaned tables into Snowflake.  
 
 A **Snowflake-native Streamlit dashboard** is included to show in-warehouse visualizations. Only a small set of validated metrics is displayed to ensure accuracy and avoid heavy queries.
 
