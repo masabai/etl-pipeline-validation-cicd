@@ -97,10 +97,11 @@ This lightweight demo showcases **in-warehouse analytics** using Snowflake’s S
 
 ## Screenshots
 
-  
-
 - Additional screenshots show pipeline execution, data transformations, and test results.  
 - No credentials or cloud access are required to view results.
+
+More screenshots: [screenshots folder](https://github.com/masabai/etl-pipeline-validation-cicd/tree/dev/screenshots)
+
 
 ---
 
