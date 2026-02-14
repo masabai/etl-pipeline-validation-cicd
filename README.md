@@ -102,13 +102,16 @@ This lightweight demo showcases **in-warehouse analytics** using Snowflake’s S
 - Additional screenshots show pipeline execution, data transformations, and test results.  
 - No credentials or cloud access are required to view results.
 
+---
+
 ## Tech Stack & Key Tools
-Cloud Environment: GitHub Codespaces (Containerized Dev Environment)
-Data Warehouse: Snowflake (Storage & Compute)
-Orchestration: GitHub Actions (CI/CD Pipeline)
-Transformations: dbt Core & Pandas
-Data Quality: Great Expectations & pytest
-Visualization: Streamlit (Snowflake-Native)
+- **Cloud Environment:** [GitHub Codespaces](https://github.com) 
+- **Data Warehouse:** [Snowflake](https://www.snowflake.com) 
+- **Orchestration:** [GitHub Actions](https://github.com) 
+- **Transformations:** [dbt Core](https://www.getdbt.com) & **Pandas**
+- **Data Quality:** [Great Expectations](https://greatexpectations.io) & [pytest](https://docs.pytest.org)
+- **Visualization:** [Streamlit](https://streamlit.io) (Snowflake-Native)
+
 
 ---
 
