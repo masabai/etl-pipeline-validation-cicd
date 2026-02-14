@@ -24,12 +24,6 @@ graph LR
 
 ```
 
-
-
-
-**Workflow at a glance:**  
-Extract (data.gov) → Transform (Pandas) → Validate (GX/Pytest) → Load (Snowflake) → Model (dbt) → Visualize (Streamlit) → Automate (GitHub Actions) 
-
 ---
 
 ## Workflow
