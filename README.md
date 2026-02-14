@@ -5,7 +5,6 @@ It extracts quarterly raw TXT files, transforms and validates them using **Pytho
 
 A **Snowflake-native Streamlit dashboard** is included to show in-warehouse visualizations. Only a small set of validated metrics is displayed to ensure accuracy and avoid heavy queries.
 
-```mermaid
 graph LR
     A[data.gov] --> B(Extract & Transform)
     B --> C{Validate: GX}
@@ -21,6 +20,7 @@ graph LR
     style F fill:#ff4b4b,stroke:#333,color:#fff
     style D fill:#29b5e8,stroke:#333,color:#fff
     style G fill:#24292e,stroke:#333,color:#fff
+
 
 
 
