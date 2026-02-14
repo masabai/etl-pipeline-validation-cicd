@@ -5,6 +5,9 @@ It extracts quarterly raw TXT files, transforms and validates them using **Pytho
 
 A **Snowflake-native Streamlit dashboard** is included to show in-warehouse visualizations. Only a small set of validated metrics is displayed to ensure accuracy and avoid heavy queries.
 
+**Workflow at a glance:**  
+Extract (data.gov) → Transform (Pandas) → Validate (GX/Pytest) → Load (Snowflake) → Model (dbt) → Visualize (Streamlit) → Automate (GitHub Actions) 
+
 ---
 
 ## Workflow
