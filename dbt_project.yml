@@ -20,7 +20,7 @@ clean-targets:
 
 # Model configuration
 models:
-  fda_dbt:      # <--- YOU MUST HAVE THIS LINE FOR SCHEMAS TO WORK
+  fda_dbt:      
     staging:
       +schema: "STAGING"
       +materialized: view

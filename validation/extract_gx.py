@@ -157,4 +157,4 @@ def validate_all_texts(processed_dir: Path):
 
         finally:
             del df
-            gc.collect()
+            gc.collect() # Free memory immediately after processing the chunk

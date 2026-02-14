@@ -18,7 +18,7 @@ Thumbs.db
 
 # ==== temp folder
 temp/
-# ==== dbt Credentials ====
+
 # === dbt Runtime Folders ===
 target/            # Compiled SQL and manifest files (regenerated every run)
 dbt_packages/      # External packages (installed via 'dbt deps')
@@ -28,7 +28,7 @@ target/
 dbt_packages/
 logs/
 
-# === dbt Credentials (IMPORTANT) === 
+# === dbt Credentials  === 
 .dbt/
 
 

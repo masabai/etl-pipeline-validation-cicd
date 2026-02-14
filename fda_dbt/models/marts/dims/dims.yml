@@ -11,7 +11,7 @@ models:
       - name: drugname
         description: "Standardized drug name"
         tests:
-          - not_null # Ensures your logic handled the NULLs found in clean_fda_drug
+          - not_null # Ensures to handle the NULLs found in clean_fda_drug
       - name: prod_ai
         description: "Product Active Ingredient"
         tests:

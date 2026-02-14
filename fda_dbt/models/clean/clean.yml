@@ -11,7 +11,7 @@ models:
           # THIS CONFIG BLOCK IS THE FIX
           config:
             severity: warn
-            warn_if: ">150"  # Higher than your 131 duplicates
+            warn_if: ">150"  # Known 131 duplicates, GA failed if warn 
 
     columns:
       - name: primaryid
