@@ -29,11 +29,12 @@ graph LR
 ## Workflow
 
 1. Extract raw FAERS TXT files.  
-2. Transform and merge files into structured CSVs.  
-3. Validate processed data using **Great Expectations**.  
-4. Optionally load cleaned tables to Snowflake (requires credentials).  
-5. Run dbt models and tests locally.  
-6. CI/CD ensures automated testing and reproducibility.
+2. Transform and merge files into structured CSVs.
+3. Unit Test code logic with pytest to handle empty files or missing columns safely.
+4. Validate processed data using **Great Expectations**.  
+5. Optionally load cleaned tables to Snowflake (requires credentials).  
+6. Run dbt models and tests locally.  
+7. CI/CD ensures automated testing and reproducibility.
 
 ---
 
@@ -41,7 +42,8 @@ graph LR
 
 - Processed **11.5M+ rows** from FAERS datasets using chunked loading to avoid memory issues.  
 - End-to-end workflow (extract → transform → validate → load → dbt models/tests) completed in ~14 minutes with **58 dbt models** and **24 tests**.  
-- Pipeline runs securely without storing credentials in code.  
+- Pipeline runs securely without storing credentials in code.
+- Integrated Great Expectations to catch schema drifts before loading to Snowflake.
 
 ---
 
@@ -50,8 +52,8 @@ graph LR
 - **Great Expectations** validates row counts and expected columns.  
 - dbt tests check for duplicates, nulls, and accepted values.  
 - Example: `clean_fda_demo` flagged 131 duplicate `primaryid + caseversion` combinations out of 11.5M rows.  
-- Unit tests implemented with **pytest**.  
-- CI/CD ensures all tests run automatically on commit.
+- Unit tests implemented with **pytest** to cover Extract, Transform, and Load stages.
+- CI/CD via GitHub Actions to automate the full pipeline on every commit
 
 > Note: For demonstration, nulls in staging tables are preserved. In production, these would be handled according to business rules.
 
@@ -81,7 +83,3 @@ This lightweight demo showcases **in-warehouse analytics** using Snowflake’s S
 
 ---
 
-## Running Tests
-
-```bash
-pytest tests/
