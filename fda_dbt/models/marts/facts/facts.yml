@@ -7,7 +7,6 @@ models:
       and reporter surrogate keys derived from dimensional joins.
 
     columns:
-      # --- Core grain ---
       - name: patient_sk
         tests:
           - not_null
