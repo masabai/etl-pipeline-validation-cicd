@@ -1,7 +1,7 @@
 # ETL Pipeline Testing
 
 This project is a cloud-based ETL pipeline for **FDA FAERS datasets**.  
-It extracts quarterly raw TXT files, transforms and validates them using **Python, dbt, and Great Expectations**, and optionally loads curated tables into Snowflake.  
+It extracts quarterly raw TXT files, transforms and validates them using **Python, dbt, and Great Expectations**, and loads cleaned tables into Snowflake.  
 
 A **Snowflake-native Streamlit dashboard** is included to show basic in-warehouse visualizations. Only a small set of validated metrics is displayed to keep results accurate and avoid heavy queries.
 
@@ -21,10 +21,9 @@ A **Snowflake-native Streamlit dashboard** is included to show basic in-warehous
 ## Engineering Highlights
 
 - Processed 11.5M+ rows from FDA FAERS datasets using chunked loading to avoid memory issues.  
-- Ingestion and validation of all rows completed in ~18 minutes.  
+- End-to-end workflow, ingest, validate, testing, transform, load, and DBT with 58 models and 24 tests completed in ~14 minutes.  
 - Pipeline runs securely without storing credentials in code.  
-- Validation uses samples for large tables to reduce runtime while keeping checks accurate.
-
+  
 ---
 
 ## Testing & Validation
@@ -32,7 +31,7 @@ A **Snowflake-native Streamlit dashboard** is included to show basic in-warehous
 - Automated validation using **Great Expectations** for row counts and expected columns.  
 - dbt tests check for duplicates, nulls, and accepted values.  
 - Example: `clean_fda_demo` flagged 131 duplicate `primaryid + caseversion` combinations out of 11.5M rows.  
-- Pytest used for pipeline unit and integration tests.  
+- Pytest used for pipeline unit tests.  
 - CI/CD ensures all tests run automatically on commit.
 
 > Note: For demonstration, nulls in staging tables are preserved. In production, these would be handled according to business rules.
