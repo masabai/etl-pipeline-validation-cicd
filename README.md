@@ -36,6 +36,10 @@ graph LR
 6. Run dbt models and tests locally.  
 7. CI/CD ensures automated testing and reproducibility.
 
+## CI/CD – GitHub Actions
+
+![GitHub Actions Screenshot](https://github.com/masabai/etl-pipeline-validation-cicd/raw/dev/screenshots/gibhub_actions.png)
+
 ---
 
 ## Engineering Highlights
@@ -44,6 +48,13 @@ graph LR
 - End-to-end workflow (extract → transform → validate → load → dbt models/tests) completed in ~15 minutes with **23 dbt models** and **58 tests**.  
 - Pipeline runs securely without storing credentials in code.
 - Integrated Great Expectations to catch schema drifts before loading to Snowflake.
+
+## Great Expectations Validation in Codespaces
+
+
+![Codespace Great Expectations Screenshot](https://github.com/masabai/etl-pipeline-validation-cicd/raw/dev/screenshots/codespace_gx.png)
+
+
 
 ---
 
@@ -56,6 +67,12 @@ graph LR
 - CI/CD via GitHub Actions to automate the full pipeline on every commit
 
 > Note: For demonstration, nulls in staging tables are preserved. In production, these would be handled according to business rules.
+
+
+
+## dbt DAG Lineage Graph
+
+![dbt DAG Graph](https://github.com/masabai/etl-pipeline-validation-cicd/raw/dev/screenshots/dbt_dag_graph.png)
 
 ---
 
@@ -71,14 +88,18 @@ A Snowflake-native **Streamlit dashboard** demonstrates interactive visualizatio
 
 This lightweight demo showcases **in-warehouse analytics** using Snowflake’s Streamlit integration without heavy queries.
 
+## Analytics Layer – Streamlit Dashboard
+
+![Streamlit Dashboard – Tab 3](https://github.com/masabai/etl-pipeline-validation-cicd/raw/dev/screenshots/streamlit_tab3.png)
+
+
 ---
 
 ## Screenshots
 
-> ![Pipeline Running](screenshots/pipeline_run.png)  
-> ![dbt Tests Passing](screenshots/dbt_tests.png)  
+  
 
-- Screenshots show pipeline execution, data transformations, and test results.  
+- Additional screenshots show pipeline execution, data transformations, and test results.  
 - No credentials or cloud access are required to view results.
 
 ---
